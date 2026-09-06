@@ -1,0 +1,27 @@
+# Core
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+
+# Supabase
+supabase>=2.3.0
+
+# OpenAI & Anthropic - the live voice-call LLM only
+openai>=1.12.0
+anthropic>=0.18.0
+
+# Google AI Studio (Gemini) - embeddings + knowledge-base extraction
+google-genai>=1.2.0
+
+# Document parsing
+pdfplumber>=0.11.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.25.0
+
+# Utilities
+python-multipart>=0.0.6
