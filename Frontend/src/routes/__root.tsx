@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BizPilot — AI voice receptionist for small business" },
+      { title: "Aivora — AI voice receptionist for small business" },
       {
         name: "description",
         content:
-          "BizPilot answers your business calls with an AI receptionist you can set up in minutes. No code, no call centre.",
+          "Aivora answers your business calls with an AI receptionist you can set up in minutes. No code, no call centre.",
       },
-      { property: "og:title", content: "BizPilot — AI voice receptionist for small business" },
+      { property: "og:title", content: "Aivora — AI voice receptionist for small business" },
       {
         property: "og:description",
         content:
@@ -93,6 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#6366f1" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -102,7 +103,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      // SVG first for browsers that take it (crisp at any tab size), .ico as
+      // the fallback and for the bare /favicon.ico browsers request anyway.
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
     ],
   }),
   shellComponent: RootShell,

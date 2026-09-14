@@ -13,18 +13,25 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SiteFrameRouteImport } from './routes/site-frame'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardAnalyticsRouteImport } from './routes/_authenticated/dashboard/analytics'
 import { Route as AuthenticatedDashboardCalendlyCallbackRouteImport } from './routes/_authenticated/dashboard/calendly-callback'
 import { Route as AuthenticatedDashboardCallsRouteImport } from './routes/_authenticated/dashboard/calls'
 import { Route as AuthenticatedDashboardConnectionsRouteImport } from './routes/_authenticated/dashboard/connections'
 import { Route as AuthenticatedDashboardKnowledgeBaseRouteImport } from './routes/_authenticated/dashboard/knowledge-base'
 import { Route as AuthenticatedDashboardUsageRouteImport } from './routes/_authenticated/dashboard/usage'
 import { Route as ApiPublicVapiWebhookRouteImport } from './routes/api/public/vapi-webhook'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
 import { Route as ApiVoiceGoLiveRouteImport } from './routes/api/voice/go-live'
 import { Route as AuthenticatedDashboardVoiceServiceIdRouteImport } from './routes/_authenticated/dashboard/voice/$serviceId'
 import { Route as AuthenticatedDashboardVoiceNewRouteImport } from './routes/_authenticated/dashboard/voice.new'
+import { Route as AuthenticatedDashboardWebsiteServiceIdRouteImport } from './routes/_authenticated/dashboard/website/$serviceId'
+import { Route as AuthenticatedDashboardWebsiteNewRouteImport } from './routes/_authenticated/dashboard/website.new'
+import { Route as AuthenticatedDashboardWhatsappServiceIdRouteImport } from './routes/_authenticated/dashboard/whatsapp/$serviceId'
+import { Route as AuthenticatedDashboardWhatsappNewRouteImport } from './routes/_authenticated/dashboard/whatsapp.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +52,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SiteFrameRoute = SiteFrameRouteImport.update({
+  id: '/site-frame',
+  path: '/site-frame',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -59,6 +71,12 @@ const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardAnalyticsRoute =
+  AuthenticatedDashboardAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 const AuthenticatedDashboardCalendlyCallbackRoute =
@@ -96,6 +114,12 @@ const ApiPublicVapiWebhookRoute = ApiPublicVapiWebhookRouteImport.update({
   path: '/api/public/vapi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWhatsappWebhookRoute =
+  ApiPublicWhatsappWebhookRouteImport.update({
+    id: '/api/public/whatsapp-webhook',
+    path: '/api/public/whatsapp-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiVoiceGoLiveRoute = ApiVoiceGoLiveRouteImport.update({
   id: '/api/voice/go-live',
   path: '/api/voice/go-live',
@@ -113,39 +137,77 @@ const AuthenticatedDashboardVoiceNewRoute =
     path: '/voice/new',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardWebsiteServiceIdRoute =
+  AuthenticatedDashboardWebsiteServiceIdRouteImport.update({
+    id: '/website/$serviceId',
+    path: '/website/$serviceId',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardWebsiteNewRoute =
+  AuthenticatedDashboardWebsiteNewRouteImport.update({
+    id: '/website/new',
+    path: '/website/new',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardWhatsappServiceIdRoute =
+  AuthenticatedDashboardWhatsappServiceIdRouteImport.update({
+    id: '/whatsapp/$serviceId',
+    path: '/whatsapp/$serviceId',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardWhatsappNewRoute =
+  AuthenticatedDashboardWhatsappNewRouteImport.update({
+    id: '/whatsapp/new',
+    path: '/whatsapp/new',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/site-frame': typeof SiteFrameRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/dashboard/analytics': typeof AuthenticatedDashboardAnalyticsRoute
   '/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
   '/dashboard/usage': typeof AuthenticatedDashboardUsageRoute
   '/api/public/vapi-webhook': typeof ApiPublicVapiWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/voice/go-live': typeof ApiVoiceGoLiveRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/voice/$serviceId': typeof AuthenticatedDashboardVoiceServiceIdRoute
   '/dashboard/voice/new': typeof AuthenticatedDashboardVoiceNewRoute
+  '/dashboard/website/$serviceId': typeof AuthenticatedDashboardWebsiteServiceIdRoute
+  '/dashboard/website/new': typeof AuthenticatedDashboardWebsiteNewRoute
+  '/dashboard/whatsapp/$serviceId': typeof AuthenticatedDashboardWhatsappServiceIdRoute
+  '/dashboard/whatsapp/new': typeof AuthenticatedDashboardWhatsappNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/site-frame': typeof SiteFrameRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/dashboard/analytics': typeof AuthenticatedDashboardAnalyticsRoute
   '/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
   '/dashboard/usage': typeof AuthenticatedDashboardUsageRoute
   '/api/public/vapi-webhook': typeof ApiPublicVapiWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/voice/go-live': typeof ApiVoiceGoLiveRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/voice/$serviceId': typeof AuthenticatedDashboardVoiceServiceIdRoute
   '/dashboard/voice/new': typeof AuthenticatedDashboardVoiceNewRoute
+  '/dashboard/website/$serviceId': typeof AuthenticatedDashboardWebsiteServiceIdRoute
+  '/dashboard/website/new': typeof AuthenticatedDashboardWebsiteNewRoute
+  '/dashboard/whatsapp/$serviceId': typeof AuthenticatedDashboardWhatsappServiceIdRoute
+  '/dashboard/whatsapp/new': typeof AuthenticatedDashboardWhatsappNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -153,18 +215,25 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/site-frame': typeof SiteFrameRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/dashboard/analytics': typeof AuthenticatedDashboardAnalyticsRoute
   '/_authenticated/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/_authenticated/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/_authenticated/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/_authenticated/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
   '/_authenticated/dashboard/usage': typeof AuthenticatedDashboardUsageRoute
   '/api/public/vapi-webhook': typeof ApiPublicVapiWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/voice/go-live': typeof ApiVoiceGoLiveRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/voice/$serviceId': typeof AuthenticatedDashboardVoiceServiceIdRoute
   '/_authenticated/dashboard/voice/new': typeof AuthenticatedDashboardVoiceNewRoute
+  '/_authenticated/dashboard/website/$serviceId': typeof AuthenticatedDashboardWebsiteServiceIdRoute
+  '/_authenticated/dashboard/website/new': typeof AuthenticatedDashboardWebsiteNewRoute
+  '/_authenticated/dashboard/whatsapp/$serviceId': typeof AuthenticatedDashboardWhatsappServiceIdRoute
+  '/_authenticated/dashboard/whatsapp/new': typeof AuthenticatedDashboardWhatsappNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -172,52 +241,73 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/site-frame'
     | '/dashboard'
     | '/onboarding'
+    | '/dashboard/analytics'
     | '/dashboard/calendly-callback'
     | '/dashboard/calls'
     | '/dashboard/connections'
     | '/dashboard/knowledge-base'
     | '/dashboard/usage'
     | '/api/public/vapi-webhook'
+    | '/api/public/whatsapp-webhook'
     | '/api/voice/go-live'
     | '/dashboard/'
     | '/dashboard/voice/$serviceId'
     | '/dashboard/voice/new'
+    | '/dashboard/website/$serviceId'
+    | '/dashboard/website/new'
+    | '/dashboard/whatsapp/$serviceId'
+    | '/dashboard/whatsapp/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/signup'
+    | '/site-frame'
     | '/onboarding'
+    | '/dashboard/analytics'
     | '/dashboard/calendly-callback'
     | '/dashboard/calls'
     | '/dashboard/connections'
     | '/dashboard/knowledge-base'
     | '/dashboard/usage'
     | '/api/public/vapi-webhook'
+    | '/api/public/whatsapp-webhook'
     | '/api/voice/go-live'
     | '/dashboard'
     | '/dashboard/voice/$serviceId'
     | '/dashboard/voice/new'
+    | '/dashboard/website/$serviceId'
+    | '/dashboard/website/new'
+    | '/dashboard/whatsapp/$serviceId'
+    | '/dashboard/whatsapp/new'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
     | '/signup'
+    | '/site-frame'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
+    | '/_authenticated/dashboard/analytics'
     | '/_authenticated/dashboard/calendly-callback'
     | '/_authenticated/dashboard/calls'
     | '/_authenticated/dashboard/connections'
     | '/_authenticated/dashboard/knowledge-base'
     | '/_authenticated/dashboard/usage'
     | '/api/public/vapi-webhook'
+    | '/api/public/whatsapp-webhook'
     | '/api/voice/go-live'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/voice/$serviceId'
     | '/_authenticated/dashboard/voice/new'
+    | '/_authenticated/dashboard/website/$serviceId'
+    | '/_authenticated/dashboard/website/new'
+    | '/_authenticated/dashboard/whatsapp/$serviceId'
+    | '/_authenticated/dashboard/whatsapp/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -225,7 +315,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  SiteFrameRoute: typeof SiteFrameRoute
   ApiPublicVapiWebhookRoute: typeof ApiPublicVapiWebhookRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
   ApiVoiceGoLiveRoute: typeof ApiVoiceGoLiveRoute
 }
 
@@ -259,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/site-frame': {
+      id: '/site-frame'
+      path: '/site-frame'
+      fullPath: '/site-frame'
+      preLoaderRoute: typeof SiteFrameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -278,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/analytics': {
+      id: '/_authenticated/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof AuthenticatedDashboardAnalyticsRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
     '/_authenticated/dashboard/calendly-callback': {
@@ -322,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVapiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/whatsapp-webhook': {
+      id: '/api/public/whatsapp-webhook'
+      path: '/api/public/whatsapp-webhook'
+      fullPath: '/api/public/whatsapp-webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/voice/go-live': {
       id: '/api/voice/go-live'
       path: '/api/voice/go-live'
@@ -343,10 +456,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardVoiceNewRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/website/$serviceId': {
+      id: '/_authenticated/dashboard/website/$serviceId'
+      path: '/website/$serviceId'
+      fullPath: '/dashboard/website/$serviceId'
+      preLoaderRoute: typeof AuthenticatedDashboardWebsiteServiceIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/website/new': {
+      id: '/_authenticated/dashboard/website/new'
+      path: '/website/new'
+      fullPath: '/dashboard/website/new'
+      preLoaderRoute: typeof AuthenticatedDashboardWebsiteNewRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/whatsapp/$serviceId': {
+      id: '/_authenticated/dashboard/whatsapp/$serviceId'
+      path: '/whatsapp/$serviceId'
+      fullPath: '/dashboard/whatsapp/$serviceId'
+      preLoaderRoute: typeof AuthenticatedDashboardWhatsappServiceIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/whatsapp/new': {
+      id: '/_authenticated/dashboard/whatsapp/new'
+      path: '/whatsapp/new'
+      fullPath: '/dashboard/whatsapp/new'
+      preLoaderRoute: typeof AuthenticatedDashboardWhatsappNewRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
 interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardAnalyticsRoute: typeof AuthenticatedDashboardAnalyticsRoute
   AuthenticatedDashboardCalendlyCallbackRoute: typeof AuthenticatedDashboardCalendlyCallbackRoute
   AuthenticatedDashboardCallsRoute: typeof AuthenticatedDashboardCallsRoute
   AuthenticatedDashboardConnectionsRoute: typeof AuthenticatedDashboardConnectionsRoute
@@ -355,10 +497,15 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedDashboardVoiceServiceIdRoute: typeof AuthenticatedDashboardVoiceServiceIdRoute
   AuthenticatedDashboardVoiceNewRoute: typeof AuthenticatedDashboardVoiceNewRoute
+  AuthenticatedDashboardWebsiteServiceIdRoute: typeof AuthenticatedDashboardWebsiteServiceIdRoute
+  AuthenticatedDashboardWebsiteNewRoute: typeof AuthenticatedDashboardWebsiteNewRoute
+  AuthenticatedDashboardWhatsappServiceIdRoute: typeof AuthenticatedDashboardWhatsappServiceIdRoute
+  AuthenticatedDashboardWhatsappNewRoute: typeof AuthenticatedDashboardWhatsappNewRoute
 }
 
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
+    AuthenticatedDashboardAnalyticsRoute: AuthenticatedDashboardAnalyticsRoute,
     AuthenticatedDashboardCalendlyCallbackRoute:
       AuthenticatedDashboardCalendlyCallbackRoute,
     AuthenticatedDashboardCallsRoute: AuthenticatedDashboardCallsRoute,
@@ -371,6 +518,14 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
     AuthenticatedDashboardVoiceServiceIdRoute:
       AuthenticatedDashboardVoiceServiceIdRoute,
     AuthenticatedDashboardVoiceNewRoute: AuthenticatedDashboardVoiceNewRoute,
+    AuthenticatedDashboardWebsiteServiceIdRoute:
+      AuthenticatedDashboardWebsiteServiceIdRoute,
+    AuthenticatedDashboardWebsiteNewRoute:
+      AuthenticatedDashboardWebsiteNewRoute,
+    AuthenticatedDashboardWhatsappServiceIdRoute:
+      AuthenticatedDashboardWhatsappServiceIdRoute,
+    AuthenticatedDashboardWhatsappNewRoute:
+      AuthenticatedDashboardWhatsappNewRoute,
   }
 
 const AuthenticatedDashboardRouteWithChildren =
@@ -396,7 +551,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  SiteFrameRoute: SiteFrameRoute,
   ApiPublicVapiWebhookRoute: ApiPublicVapiWebhookRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
   ApiVoiceGoLiveRoute: ApiVoiceGoLiveRoute,
 }
 export const routeTree = rootRouteImport

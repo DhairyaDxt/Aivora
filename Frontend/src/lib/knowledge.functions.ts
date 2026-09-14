@@ -31,14 +31,25 @@ async function ragFetch<T>(path: string, body: Record<string, unknown>): Promise
   if (!secret) throw new Error("The knowledge extraction service is not configured yet.");
   const ragUrl = process.env["RAG_SERVICE_URL"] ?? RAG_SERVICE_URL_DEFAULT;
 
-  const res = await fetch(`${ragUrl}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${secret}`,
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ragUrl}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${secret}`,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (cause) {
+    // Node surfaces a refused connection as a bare "fetch failed", which tells
+    // nobody anything. The overwhelmingly common cause is the RAG container
+    // simply not being up, so say that instead.
+    console.error(`RAG service unreachable at ${ragUrl}${path}`, cause);
+    throw new Error(
+      `Can't reach the knowledge service at ${ragUrl}. Start it with "docker compose up -d" in aivora-rag-service, then try again.`,
+    );
+  }
 
   const text = await res.text();
   if (!res.ok) {

@@ -1,5 +1,5 @@
 # App Flow Document
-## BizPilot — End-to-End User Journeys
+## Aivora — End-to-End User Journeys
 *Version 1.0, July 2026*
 
 ---
@@ -13,7 +13,7 @@
 
 ## B. Knowledge Base Setup (shared step, triggered the first time any service needs it)
 
-1. Prompted mid-wizard: "Tell BizPilot about your business" — services & pricing, hours, FAQs.
+1. Prompted mid-wizard: "Tell Aivora about your business" — services & pricing, hours, FAQs.
 2. Option to upload an existing price list/menu/brochure PDF → auto-parsed into structured entries for review.
 3. Owner reviews/edits auto-parsed entries before saving.
 4. This content is now available to every channel (voice, WhatsApp, website) and can be edited anytime from Settings.
@@ -24,7 +24,7 @@
 2. AI pre-fills pages using Business Profile + Knowledge Base content.
 3. Owner customizes via visual editor (text, images, sections, colors) — no code.
 4. Booking widget and chat widget are added automatically (toggle to remove).
-5. **Preview:** staging URL generated instantly (`preview--yourbusiness.bizpilot.site`), fully functional and shareable.
+5. **Preview:** staging URL generated instantly (`preview--yourbusiness.aivora.site`), fully functional and shareable.
 6. Domain step: free subdomain by default, or guided custom-domain connect (platform shows exact CNAME/A record for the owner's registrar; "Verify" button polls DNS until it resolves).
 7. Click "Publish" → site goes live at the chosen domain.
 

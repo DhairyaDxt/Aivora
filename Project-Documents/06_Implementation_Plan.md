@@ -1,5 +1,5 @@
 # Implementation Plan
-## BizPilot — Roadmap, Team, and Build-vs-Buy
+## Aivora — Roadmap, Team, and Build-vs-Buy
 *Version 1.0, July 2026*
 
 ---

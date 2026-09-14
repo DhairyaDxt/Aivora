@@ -14,20 +14,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { COUNTRIES, LANGUAGES, TIMEZONES, VERTICALS, slugify, DEFAULT_HOURS } from "@/lib/bizpilot";
-import { PhoneCall } from "lucide-react";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { COUNTRIES, LANGUAGES, TIMEZONES, VERTICALS, slugify, DEFAULT_HOURS } from "@/lib/aivora";
+import { AivoraMark } from "@/components/brand/AivoraLogo";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
-      { title: "Set up your business — BizPilot" },
+      { title: "Set up your business — Aivora" },
       {
         name: "description",
-        content: "Tell BizPilot about your business so your receptionist sounds right.",
+        content: "Tell Aivora about your business so your receptionist sounds right.",
       },
-      { property: "og:title", content: "Set up your business — BizPilot" },
+      { property: "og:title", content: "Set up your business — Aivora" },
       {
         property: "og:description",
         content: "Add your business basics to start your AI receptionist.",
@@ -108,9 +108,7 @@ function Onboarding() {
     <div className="relative min-h-screen overflow-hidden bg-background px-6 py-16">
       <AuroraBackground />
       <div className="relative mx-auto max-w-xl">
-        <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)] to-[var(--grad-to)] shadow-[0_4px_16px_-4px_var(--glow)]">
-          <PhoneCall className="size-5 text-white" />
-        </span>
+        <AivoraMark className="size-10 rounded-xl shadow-[0_4px_16px_-4px_var(--glow)]" />
         <div className="mt-6">
           <SectionLabel index={0}>Onboarding</SectionLabel>
         </div>

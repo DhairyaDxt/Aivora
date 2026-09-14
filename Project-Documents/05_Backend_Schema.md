@@ -1,5 +1,5 @@
 # Backend Schema
-## BizPilot — Data Model (PostgreSQL)
+## Aivora — Data Model (PostgreSQL)
 *Version 1.0, July 2026*
 
 ---

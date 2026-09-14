@@ -199,7 +199,7 @@ export const claimFreeNumber = createServerFn({ method: "POST" })
       method: "POST",
       body: {
         provider: "vapi",
-        name: "BizPilot free trial number",
+        name: "Aivora free trial number",
         numberDesiredAreaCode: data.areaCode,
       },
     });
@@ -303,7 +303,7 @@ export const buyNumber = createServerFn({ method: "POST" })
           master,
           {
             method: "POST",
-            form: { FriendlyName: `BizPilot ${org.name} ${data.orgId.slice(0, 8)}` },
+            form: { FriendlyName: `Aivora ${org.name} ${data.orgId.slice(0, 8)}` },
           },
         );
         subToken = created.auth_token;

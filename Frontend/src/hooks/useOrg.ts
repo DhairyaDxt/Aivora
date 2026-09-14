@@ -47,3 +47,41 @@ export function useVoiceService(orgId: string | undefined) {
     },
   });
 }
+
+export function useWhatsappService(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ["whatsapp-service", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("org_id", orgId!)
+        .eq("type", "whatsapp")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useWebsiteService(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ["website-service", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("org_id", orgId!)
+        .eq("type", "website")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}

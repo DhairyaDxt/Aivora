@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useOrg } from "@/hooks/useOrg";
 import { completeCalendlyConnect } from "@/lib/calendly.functions";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/calendly-callback")({

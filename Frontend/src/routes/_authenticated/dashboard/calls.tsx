@@ -12,19 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { StatGrid } from "@/components/bizpilot/StatGrid";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { StatGrid } from "@/components/aivora/StatGrid";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/dashboard/calls")({
   head: () => ({
     meta: [
-      { title: "Calls — BizPilot" },
+      { title: "Calls — Aivora" },
       {
         name: "description",
         content: "Read transcripts and listen back to calls your receptionist handled.",
       },
-      { property: "og:title", content: "Calls — BizPilot" },
+      { property: "og:title", content: "Calls — Aivora" },
       { property: "og:description", content: "Transcripts and recordings from your receptionist." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

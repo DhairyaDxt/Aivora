@@ -26,18 +26,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Trash2, Upload } from "lucide-react";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/dashboard/knowledge-base")({
   head: () => ({
     meta: [
-      { title: "Knowledge base — BizPilot" },
+      { title: "Knowledge base — Aivora" },
       {
         name: "description",
         content: "Teach your receptionist about your services, pricing and policies.",
       },
-      { property: "og:title", content: "Knowledge base — BizPilot" },
+      { property: "og:title", content: "Knowledge base — Aivora" },
       { property: "og:description", content: "Teach your receptionist what your business does." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

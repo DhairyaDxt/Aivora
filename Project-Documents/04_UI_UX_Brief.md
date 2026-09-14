@@ -1,5 +1,5 @@
 # UI/UX Brief
-## BizPilot — Design Principles & Key Screens
+## Aivora — Design Principles & Key Screens
 *Version 1.0, July 2026*
 
 ---

@@ -161,9 +161,6 @@ export function buildSystemPrompt(input: PromptInputs): string {
     config.consent_enabled && config.consent_message
       ? `- You have already told the caller: "${config.consent_message}"`
       : "",
-    config.multilingual_enabled
-      ? "- The caller may speak any language. Detect which language they're using from their first message and reply in that same language for the rest of the call."
-      : "",
   ];
 
   if (config.kb_enabled && knowledge.length > 0) {
@@ -174,6 +171,21 @@ export function buildSystemPrompt(input: PromptInputs): string {
       kb += chunk;
     }
     lines.push("", "Business knowledge you can rely on:", kb.trim());
+  }
+
+  // Deliberately last: everything above (persona, policies, the whole
+  // knowledge base) is written in English and can run to thousands of
+  // characters, which drowns out a language instruction placed earlier and
+  // leaves the model defaulting back to English.
+  if (config.multilingual_enabled) {
+    lines.push(
+      "",
+      "LANGUAGE (most important rule):",
+      "- The caller may speak any language. Identify the language of the caller's own words and reply ONLY in that language.",
+      "- These instructions and the business information above are written in English purely for your reference. That is NOT a reason to answer in English.",
+      "- If the caller speaks Hindi, answer in Hindi. If they speak Spanish, answer in Spanish. And so on, for the whole call.",
+      "- If the caller switches language mid-call, switch with them.",
+    );
   }
 
   return lines.filter(Boolean).join("\n");
@@ -478,18 +490,25 @@ export function buildAssistantPayload(args: {
   const transcriberProvider = config.transcriber_provider ?? "deepgram";
   const multilingual = config.multilingual_enabled === true;
 
-  // Multilingual mode needs three things to line up: a transcriber that can
-  // detect the caller's language, a TTS model that can speak more than one,
-  // and (below, in buildSystemPrompt) an instruction to reply in kind.
+  // Multilingual mode needs four things to line up: a transcriber model that
+  // can code-switch, that transcriber set to "multi", a TTS model that can
+  // speak more than one language, and (in buildSystemPrompt) an instruction
+  // to reply in kind. Miss any one and the call silently stays English-only.
   const voiceModel = multilingual
     ? (voice.provider === "11labs" && "eleven_multilingual_v2") ||
       (voice.provider === "playht" && "PlayDialog") ||
       voice.model
     : voice.model;
-  const transcriberLanguage =
-    multilingual && transcriberProvider === "deepgram"
-      ? "multi"
-      : (config.transcriber_language ?? "en");
+  const deepgramMultilingual = multilingual && transcriberProvider === "deepgram";
+  const transcriberLanguage = deepgramMultilingual
+    ? "multi"
+    : (config.transcriber_language ?? "en");
+  // Deepgram's "multi" only code-switches between Spanish and English on
+  // nova-2; nova-3 covers English, Spanish, French, German, Hindi, Russian,
+  // Portuguese, Japanese, Italian and Dutch. Anything else the caller speaks
+  // comes back as garbled English, so the model answers in English and the
+  // whole feature looks broken - force the model that can actually do it.
+  const transcriberModel = deepgramMultilingual ? "nova-3" : (config.transcriber_model ?? "nova-2");
 
   return {
     name: args.name,
@@ -502,7 +521,7 @@ export function buildAssistantPayload(args: {
     },
     transcriber: {
       provider: transcriberProvider,
-      model: config.transcriber_model ?? "nova-2",
+      model: transcriberModel,
       language: transcriberLanguage,
     },
     maxDurationSeconds: config.max_call_duration_seconds ?? 600,

@@ -13,9 +13,9 @@ import { PhoneTab } from "./tabs/PhoneTab";
 import { FlowTab } from "./tabs/FlowTab";
 import { KnowledgeTab } from "./tabs/KnowledgeTab";
 import { AdvancedTab } from "./tabs/AdvancedTab";
-import { TestCallDrawer } from "@/components/bizpilot/TestCallDrawer";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { TestCallDrawer } from "@/components/aivora/TestCallDrawer";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 import { goLive, syncAssistant } from "@/lib/voice.functions";
 import { Database } from "@/integrations/supabase/types";
 

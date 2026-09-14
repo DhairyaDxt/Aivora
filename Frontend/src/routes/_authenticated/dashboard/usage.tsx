@@ -11,19 +11,19 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { StatGrid } from "@/components/bizpilot/StatGrid";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { StatGrid } from "@/components/aivora/StatGrid";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/dashboard/usage")({
   head: () => ({
     meta: [
-      { title: "Usage — BizPilot" },
+      { title: "Usage — Aivora" },
       {
         name: "description",
         content: "Call volume and cost over time for your voice receptionist.",
       },
-      { property: "og:title", content: "Usage — BizPilot" },
+      { property: "og:title", content: "Usage — Aivora" },
       { property: "og:description", content: "Call volume and cost over time." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

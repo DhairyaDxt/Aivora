@@ -1,5 +1,5 @@
 # Technical Requirements Document (TRD)
-## BizPilot — Architecture & Technical Design
+## Aivora — Architecture & Technical Design
 *Version 1.0, July 2026*
 
 ---
@@ -55,7 +55,7 @@ Twilio Voice (Media Streams) → real-time STT (Deepgram) → LLM (configurable,
 - Pros: full control, cost optimization at scale.
 - Cons: you own latency tuning, interruption/barge-in handling, voicemail detection — this is the single hardest part of the whole product to get *feeling natural*.
 
-**Path B — use a managed voice-AI orchestration layer under the hood** (e.g. Twilio's own ConversationRelay combined with a realtime LLM API, or a dedicated voice-AI infra provider) and build BizPilot's business logic (knowledge base, booking, persona config) as the layer on top.
+**Path B — use a managed voice-AI orchestration layer under the hood** (e.g. Twilio's own ConversationRelay combined with a realtime LLM API, or a dedicated voice-AI infra provider) and build Aivora's business logic (knowledge base, booking, persona config) as the layer on top.
 - Pros: dramatically faster time-to-market, latency already solved by a specialist.
 - Cons: less pricing control, vendor dependency for the core experience.
 

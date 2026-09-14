@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { useOrg } from "@/hooks/useOrg";
 import { buyNumber, claimFreeNumber, searchNumbers, syncAssistant } from "@/lib/voice.functions";
 import { VoiceConfig } from "../VoiceBuilder";
@@ -31,6 +33,7 @@ interface PhoneTabProps {
 
 export function PhoneTab({ serviceId, config, onChange, onAssigned }: PhoneTabProps) {
   const { data: org } = useOrg();
+  const queryClient = useQueryClient();
   const claim = useServerFn(claimFreeNumber);
   const search = useServerFn(searchNumbers);
   const buy = useServerFn(buyNumber);
@@ -44,9 +47,28 @@ export function PhoneTab({ serviceId, config, onChange, onAssigned }: PhoneTabPr
 
   const areaCodeValid = /^\d{3}$/.test(areaCode);
 
+  // The dialable number lives on the phone_numbers row - voice_agent_configs
+  // only stores Vapi's internal record id, which is not something to show.
+  const assignedNumberQuery = useQuery({
+    queryKey: ["assigned-phone-number", serviceId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("phone_numbers")
+        .select("number, provider")
+        .eq("assigned_service_id", serviceId)
+        .eq("status", "active")
+        .order("purchased_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const assignNumber = (assigned: { number: string; vapi_number_id: string | null }) => {
     setNumber(assigned.number);
     onChange({ vapi_phone_number_id: assigned.vapi_number_id ?? null });
+    void queryClient.invalidateQueries({ queryKey: ["assigned-phone-number", serviceId] });
     onAssigned();
   };
 
@@ -122,7 +144,8 @@ export function PhoneTab({ serviceId, config, onChange, onAssigned }: PhoneTabPr
     }
   };
 
-  const assigned = number ?? config.vapi_phone_number_id;
+  const assigned = number ?? assignedNumberQuery.data?.number ?? null;
+  const provider = assignedNumberQuery.data?.provider ?? null;
   return (
     <div className="max-w-3xl space-y-6">
       <div>
@@ -136,9 +159,23 @@ export function PhoneTab({ serviceId, config, onChange, onAssigned }: PhoneTabPr
         <div className="flex items-center gap-4 rounded-xl border p-6">
           <CheckCircle className="size-8 text-status-live" />
           <div>
-            <p className="text-sm text-muted-foreground">Assigned Vapi number</p>
+            <p className="text-sm text-muted-foreground">
+              Assigned number
+              {provider === "vapi_free"
+                ? " · free trial number"
+                : provider === "twilio"
+                  ? " · Twilio"
+                  : ""}
+            </p>
             <p className="text-lg font-semibold">{assigned}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Call this number to reach your receptionist once it's live.
+            </p>
           </div>
+        </div>
+      ) : assignedNumberQuery.isLoading ? (
+        <div className="flex items-center gap-3 rounded-xl border p-6 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> Checking your number…
         </div>
       ) : (
         <div className="space-y-4">

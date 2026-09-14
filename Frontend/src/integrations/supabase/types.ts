@@ -247,6 +247,7 @@ export type Database = {
           ended_at: string | null;
           id: string;
           is_sandbox: boolean;
+          last_message_at: string | null;
           org_id: string | null;
           resolution_type: string | null;
           service_id: string | null;
@@ -260,6 +261,7 @@ export type Database = {
           ended_at?: string | null;
           id?: string;
           is_sandbox?: boolean;
+          last_message_at?: string | null;
           org_id?: string | null;
           resolution_type?: string | null;
           service_id?: string | null;
@@ -273,6 +275,7 @@ export type Database = {
           ended_at?: string | null;
           id?: string;
           is_sandbox?: boolean;
+          last_message_at?: string | null;
           org_id?: string | null;
           resolution_type?: string | null;
           service_id?: string | null;
@@ -353,24 +356,33 @@ export type Database = {
       messages: {
         Row: {
           content: string | null;
+          content_type: string | null;
           conversation_id: string | null;
           created_at: string | null;
           id: string;
+          metadata: Json | null;
           sender: string;
+          wa_message_id: string | null;
         };
         Insert: {
           content?: string | null;
+          content_type?: string | null;
           conversation_id?: string | null;
           created_at?: string | null;
           id?: string;
+          metadata?: Json | null;
           sender: string;
+          wa_message_id?: string | null;
         };
         Update: {
           content?: string | null;
+          content_type?: string | null;
           conversation_id?: string | null;
           created_at?: string | null;
           id?: string;
+          metadata?: Json | null;
           sender?: string;
+          wa_message_id?: string | null;
         };
         Relationships: [
           {
@@ -711,12 +723,224 @@ export type Database = {
           },
         ];
       };
+      website_configs: {
+        Row: {
+          connection_status: string;
+          deployment_url: string | null;
+          footer_content: Json | null;
+          footer_variant: string | null;
+          last_error: string | null;
+          last_published_at: string | null;
+          nav_content: Json | null;
+          nav_variant: string | null;
+          published_theme: Json | null;
+          service_id: string;
+          template_id: string;
+          theme: Json;
+          updated_at: string | null;
+          vercel_project_id: string | null;
+          vercel_project_name: string | null;
+          vercel_token_secret_ref: string | null;
+        };
+        Insert: {
+          connection_status?: string;
+          deployment_url?: string | null;
+          footer_content?: Json | null;
+          footer_variant?: string | null;
+          last_error?: string | null;
+          last_published_at?: string | null;
+          nav_content?: Json | null;
+          nav_variant?: string | null;
+          published_theme?: Json | null;
+          service_id: string;
+          template_id: string;
+          theme?: Json;
+          updated_at?: string | null;
+          vercel_project_id?: string | null;
+          vercel_project_name?: string | null;
+          vercel_token_secret_ref?: string | null;
+        };
+        Update: {
+          connection_status?: string;
+          deployment_url?: string | null;
+          footer_content?: Json | null;
+          footer_variant?: string | null;
+          last_error?: string | null;
+          last_published_at?: string | null;
+          nav_content?: Json | null;
+          nav_variant?: string | null;
+          published_theme?: Json | null;
+          service_id?: string;
+          template_id?: string;
+          theme?: Json;
+          updated_at?: string | null;
+          vercel_project_id?: string | null;
+          vercel_project_name?: string | null;
+          vercel_token_secret_ref?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "website_configs_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: true;
+            referencedRelation: "services";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      website_pages: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          is_home: boolean;
+          name: string;
+          published_sections: Json | null;
+          sections: Json;
+          service_id: string;
+          show_in_nav: boolean;
+          slug: string;
+          sort_order: number;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          is_home?: boolean;
+          name: string;
+          published_sections?: Json | null;
+          sections?: Json;
+          service_id: string;
+          show_in_nav?: boolean;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          is_home?: boolean;
+          name?: string;
+          published_sections?: Json | null;
+          sections?: Json;
+          service_id?: string;
+          show_in_nav?: boolean;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "website_pages_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      whatsapp_bot_configs: {
+        Row: {
+          access_token_secret_ref: string | null;
+          after_hours_behavior: string | null;
+          bot_personality_prompt: string | null;
+          business_hours_override: Json | null;
+          connected_at: string | null;
+          connection_status: string;
+          escalation_number: string | null;
+          functions_enabled: Json | null;
+          human_handoff_keywords: string[] | null;
+          kb_enabled: boolean | null;
+          last_error: string | null;
+          llm_model: string | null;
+          llm_model_escalated: string | null;
+          llm_provider: string | null;
+          persona_name: string | null;
+          phone_number_display: string | null;
+          phone_number_id: string | null;
+          service_id: string;
+          session_timeout_minutes: number | null;
+          temperature: number | null;
+          token_expires_at: string | null;
+          token_type: string | null;
+          updated_at: string | null;
+          waba_id: string | null;
+          welcome_message: string | null;
+          whatsapp_business_name: string | null;
+        };
+        Insert: {
+          access_token_secret_ref?: string | null;
+          after_hours_behavior?: string | null;
+          bot_personality_prompt?: string | null;
+          business_hours_override?: Json | null;
+          connected_at?: string | null;
+          connection_status?: string;
+          escalation_number?: string | null;
+          functions_enabled?: Json | null;
+          human_handoff_keywords?: string[] | null;
+          kb_enabled?: boolean | null;
+          last_error?: string | null;
+          llm_model?: string | null;
+          llm_model_escalated?: string | null;
+          llm_provider?: string | null;
+          persona_name?: string | null;
+          phone_number_display?: string | null;
+          phone_number_id?: string | null;
+          service_id: string;
+          session_timeout_minutes?: number | null;
+          temperature?: number | null;
+          token_expires_at?: string | null;
+          token_type?: string | null;
+          updated_at?: string | null;
+          waba_id?: string | null;
+          welcome_message?: string | null;
+          whatsapp_business_name?: string | null;
+        };
+        Update: {
+          access_token_secret_ref?: string | null;
+          after_hours_behavior?: string | null;
+          bot_personality_prompt?: string | null;
+          business_hours_override?: Json | null;
+          connected_at?: string | null;
+          connection_status?: string;
+          escalation_number?: string | null;
+          functions_enabled?: Json | null;
+          human_handoff_keywords?: string[] | null;
+          kb_enabled?: boolean | null;
+          last_error?: string | null;
+          llm_model?: string | null;
+          llm_model_escalated?: string | null;
+          llm_provider?: string | null;
+          persona_name?: string | null;
+          phone_number_display?: string | null;
+          phone_number_id?: string | null;
+          service_id?: string;
+          session_timeout_minutes?: number | null;
+          temperature?: number | null;
+          token_expires_at?: string | null;
+          token_type?: string | null;
+          updated_at?: string | null;
+          waba_id?: string | null;
+          welcome_message?: string | null;
+          whatsapp_business_name?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_bot_configs_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: true;
+            referencedRelation: "services";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       delete_calendly_secret: { Args: { p_name: string }; Returns: undefined };
+      delete_vercel_secret: { Args: { p_name: string }; Returns: undefined };
+      delete_whatsapp_secret: { Args: { p_name: string }; Returns: undefined };
       is_org_member: { Args: { target_org: string }; Returns: boolean };
       match_kb_entries: {
         Args: {
@@ -733,11 +957,21 @@ export type Database = {
         }[];
       };
       read_calendly_secret: { Args: { p_name: string }; Returns: string };
+      read_vercel_secret: { Args: { p_name: string }; Returns: string };
+      read_whatsapp_secret: { Args: { p_name: string }; Returns: string };
       store_calendly_secret: {
         Args: { p_name: string; p_secret: string };
         Returns: string;
       };
       store_twilio_subaccount_secret: {
+        Args: { p_name: string; p_secret: string };
+        Returns: string;
+      };
+      store_vercel_secret: {
+        Args: { p_name: string; p_secret: string };
+        Returns: string;
+      };
+      store_whatsapp_secret: {
         Args: { p_name: string; p_secret: string };
         Returns: string;
       };

@@ -10,16 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SectionLabel } from "@/components/bizpilot/SectionLabel";
-import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
-import { CalendlyConnectCard } from "@/components/bizpilot/CalendlyConnectCard";
+import { SectionLabel } from "@/components/aivora/SectionLabel";
+import { AuroraBackground } from "@/components/aivora/AuroraBackground";
+import { CalendlyConnectCard } from "@/components/aivora/CalendlyConnectCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard/connections")({
   head: () => ({
     meta: [
-      { title: "Connections — BizPilot" },
-      { name: "description", content: "See which services power your BizPilot receptionist." },
-      { property: "og:title", content: "Connections — BizPilot" },
+      { title: "Connections — Aivora" },
+      { name: "description", content: "See which services power your Aivora receptionist." },
+      { property: "og:title", content: "Connections — Aivora" },
       { property: "og:description", content: "See which services power your receptionist." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -49,7 +49,7 @@ function Connections() {
       provider: "Voice engine",
       purpose: "Speech, understanding and call handling",
       status: "Connected",
-      action: "Managed by BizPilot",
+      action: "Managed by Aivora",
     },
     {
       provider: "Phone numbers",

@@ -140,18 +140,34 @@ export function VoiceTab({ config, onChange }: VoiceTabProps) {
         </p>
       </div>
 
-      <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-        <div className="space-y-0.5 pr-4">
-          <Label className="text-base">Auto-detect caller language</Label>
-          <p className="text-sm text-muted-foreground">
-            Detect whatever language the caller speaks and reply in kind, instead of sticking to one
-            fixed language.
-          </p>
+      <div className="space-y-2">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+          <div className="space-y-0.5 pr-4">
+            <Label className="text-base">Auto-detect caller language</Label>
+            <p className="text-sm text-muted-foreground">
+              Detect whatever language the caller speaks and reply in kind, instead of sticking to
+              one fixed language.
+            </p>
+          </div>
+          <Switch
+            checked={config.multilingual_enabled === true}
+            onCheckedChange={(checked) => onChange({ multilingual_enabled: checked })}
+          />
         </div>
-        <Switch
-          checked={config.multilingual_enabled === true}
-          onCheckedChange={(checked) => onChange({ multilingual_enabled: checked })}
-        />
+        {config.multilingual_enabled ? (
+          <p className="px-1 text-xs text-muted-foreground">
+            Covers English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian
+            and Dutch. Needs the Deepgram transcriber (set on the Advanced tab) — press Save/Sync
+            after changing this.
+          </p>
+        ) : null}
+        {config.multilingual_enabled &&
+        (config.transcriber_provider ?? "deepgram") !== "deepgram" ? (
+          <p className="px-1 text-xs text-status-attention">
+            Your transcriber is set to {config.transcriber_provider} on the Advanced tab, which
+            can't detect the caller's language — switch it to Deepgram for this to work.
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-4">

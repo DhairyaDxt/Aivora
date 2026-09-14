@@ -1,4 +1,4 @@
-# Run BizPilot locally
+# Run Aivora locally
 
 This setup replaces Lovable Cloud and Render with local services. Vapi, Twilio, and OpenAI remain external providers because they supply real telephony and AI.
 
@@ -7,14 +7,14 @@ This setup replaces Lovable Cloud and Render with local services. Vapi, Twilio, 
 1. Start Docker Desktop.
 2. From `Frontend`, run `npx supabase start`. Copy the printed API URL, anon key, and service-role key.
 3. Run `npx supabase db reset` from `Frontend` to create the local schema and RLS policies.
-4. Open `http://127.0.0.1:54323`, select SQL Editor, and run `bizpilot-rag-service/migrations/001_add_rag_columns_and_messages.sql`.
+4. Open `http://127.0.0.1:54323`, select SQL Editor, and run `aivora-rag-service/migrations/001_add_rag_columns_and_messages.sql`.
 5. Copy `Frontend/.env.local.example` to `Frontend/.env.local`, and replace every `PASTE_...` value. Generate the shared secret with:
 
    ```powershell
    [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
    ```
 
-6. Copy `bizpilot-rag-service/.env.local.example` to `bizpilot-rag-service/.env` and fill it in. `ORCHESTRATION_SHARED_SECRET` must exactly match the frontend value.
+6. Copy `aivora-rag-service/.env.local.example` to `aivora-rag-service/.env` and fill it in. `ORCHESTRATION_SHARED_SECRET` must exactly match the frontend value.
 
 ## Start the services
 
@@ -27,7 +27,7 @@ npm run dev -- --host 0.0.0.0
 ```
 
 ```powershell
-cd "C:\New folder (2)\Sem 7\Major\bizpilot-rag-service"
+cd "C:\New folder (2)\Sem 7\Major\aivora-rag-service"
 docker compose up --build
 ```
 
@@ -60,4 +60,4 @@ Open the frontend through its public tunnel before pressing Save/Sync. Set `app_
 
 ## Safety
 
-`.env.local` and `bizpilot-rag-service/.env` are ignored by Git. Never commit or put server credentials in `VITE_*` variables.
+`.env.local` and `aivora-rag-service/.env` are ignored by Git. Never commit or put server credentials in `VITE_*` variables.
