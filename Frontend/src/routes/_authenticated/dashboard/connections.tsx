@@ -11,6 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
+import { CalendlyConnectCard } from "@/components/bizpilot/CalendlyConnectCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard/connections")({
   head: () => ({
@@ -58,44 +60,53 @@ function Connections() {
   ];
 
   return (
-    <div className="px-6 py-10 md:px-10 md:py-14">
-      <SectionLabel index={2}>Connections</SectionLabel>
-      <h1 className="mt-2 text-3xl font-semibold">Connections</h1>
-      <p className="mt-3 max-w-xl text-muted-foreground">
-        The services your receptionist relies on. Nothing to set up by hand.
-      </p>
+    <div className="relative overflow-hidden px-6 py-10 md:px-10 md:py-14">
+      <AuroraBackground />
+      <div className="relative">
+        <SectionLabel index={2}>Connections</SectionLabel>
+        <h1 className="mt-2 text-3xl font-bold">Connections</h1>
+        <p className="mt-3 max-w-xl text-muted-foreground">
+          The services your receptionist relies on. Nothing to set up by hand.
+        </p>
 
-      <div className="panel mt-8 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Provider</TableHead>
-              <TableHead>Purpose</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.provider}>
-                <TableCell className="font-medium">{row.provider}</TableCell>
-                <TableCell className="text-muted-foreground">{row.purpose}</TableCell>
-                <TableCell>
-                  <span
-                    className={
-                      row.status === "Connected"
-                        ? "rounded-full border border-status-live/30 bg-status-live/12 px-2.5 py-0.5 text-xs font-medium text-status-live"
-                        : "rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                    }
-                  >
-                    {row.status}
-                  </span>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{row.action}</TableCell>
+        <div className="panel mt-8 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Provider</TableHead>
+                <TableHead>Purpose</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.provider}>
+                  <TableCell className="font-medium">{row.provider}</TableCell>
+                  <TableCell className="text-muted-foreground">{row.purpose}</TableCell>
+                  <TableCell>
+                    <span
+                      className={
+                        row.status === "Connected"
+                          ? "rounded-full border border-status-live/30 bg-status-live/12 px-2.5 py-0.5 text-xs font-medium text-status-live"
+                          : "rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                      }
+                    >
+                      {row.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{row.action}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {org?.id ? (
+          <div className="mt-6">
+            <CalendlyConnectCard orgId={org.id} />
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -47,26 +47,37 @@ type SupabaseAdmin = SupabaseClient;
 async function resolveOrgForAssistant(
   supabaseAdmin: SupabaseAdmin,
   assistantId: string | undefined,
-): Promise<{ orgId: string | null; serviceId: string | null; escalationNumber: string | null }> {
-  if (!assistantId) return { orgId: null, serviceId: null, escalationNumber: null };
+): Promise<{
+  orgId: string | null;
+  serviceId: string | null;
+  escalationNumber: string | null;
+  timezone: string;
+}> {
+  if (!assistantId)
+    return { orgId: null, serviceId: null, escalationNumber: null, timezone: "UTC" };
 
   const { data: config } = await supabaseAdmin
     .from("voice_agent_configs")
     .select("service_id, escalation_number")
     .eq("vapi_assistant_id", assistantId)
     .maybeSingle();
-  if (!config?.service_id) return { orgId: null, serviceId: null, escalationNumber: null };
+  if (!config?.service_id)
+    return { orgId: null, serviceId: null, escalationNumber: null, timezone: "UTC" };
 
   const { data: service } = await supabaseAdmin
     .from("services")
-    .select("org_id")
+    .select("org_id, organizations(timezone)")
     .eq("id", config.service_id)
     .maybeSingle();
+
+  const org = service?.organizations as { timezone: string } | { timezone: string }[] | null;
+  const timezone = (Array.isArray(org) ? org[0]?.timezone : org?.timezone) ?? "UTC";
 
   return {
     orgId: service?.org_id ?? null,
     serviceId: config.service_id,
     escalationNumber: config.escalation_number ?? null,
+    timezone,
   };
 }
 
@@ -105,35 +116,15 @@ async function getOrCreateConversation(
   return created ?? null;
 }
 
-const NO_BOOKING_ENGINE_MESSAGE =
-  "Booking isn't set up yet. I've taken your details as a message instead.";
-
-async function takeMessage(
-  supabaseAdmin: SupabaseAdmin,
-  conversationId: string,
-  args: Record<string, unknown>,
-): Promise<string> {
-  const parts: string[] = [];
-  if (typeof args["customer_name"] === "string") parts.push(`Customer: ${args["customer_name"]}`);
-  if (typeof args["customer_phone"] === "string") parts.push(`Phone: ${args["customer_phone"]}`);
-  parts.push(
-    `Message: ${typeof args["summary"] === "string" ? args["summary"] : "(no summary given)"}`,
-  );
-  if (args["callback_requested"]) parts.push("Callback requested: Yes");
-
-  await supabaseAdmin.from("messages").insert({
-    conversation_id: conversationId,
-    sender: "customer",
-    content: parts.join("\n"),
-  });
-
-  return "I've taken your message. The business will get back to you soon.";
-}
-
 async function runTool(
   supabaseAdmin: SupabaseAdmin,
   toolCall: VapiToolCall,
-  ctx: { conversationId: string; escalationNumber: string | null },
+  ctx: {
+    conversationId: string;
+    escalationNumber: string | null;
+    orgId: string | null;
+    timezone: string;
+  },
 ): Promise<string> {
   let args: Record<string, unknown> = {};
   try {
@@ -142,29 +133,8 @@ async function runTool(
     // Malformed arguments shouldn't crash the call; fall through with {}.
   }
 
-  switch (toolCall.function.name) {
-    case "take_message":
-      return takeMessage(supabaseAdmin, ctx.conversationId, args);
-    case "check_availability":
-    case "book_appointment":
-      // No booking engine exists yet - be honest about that rather than
-      // pretending to check a calendar, and fall back to taking a message.
-      await takeMessage(supabaseAdmin, ctx.conversationId, {
-        summary: `Customer tried to ${toolCall.function.name === "book_appointment" ? "book an appointment" : "check availability"}.`,
-        callback_requested: true,
-      });
-      return NO_BOOKING_ENGINE_MESSAGE;
-    case "transfer_call":
-      // In normal operation this tool has static destinations configured
-      // (see buildAssistantPayload), so Vapi handles the transfer itself
-      // and never calls this webhook for it. This only runs if that's
-      // somehow not the case.
-      return ctx.escalationNumber
-        ? `Please hold while I connect you to ${ctx.escalationNumber}.`
-        : "I'm not able to transfer you right now, but I've taken a message.";
-    default:
-      return `I don't have a way to do that yet (${toolCall.function.name}).`;
-  }
+  const { runVoiceTool } = await import("@/lib/voiceTools.server");
+  return runVoiceTool(supabaseAdmin, toolCall.function.name, args, ctx);
 }
 
 export const Route = createFileRoute("/api/public/vapi-webhook")({
@@ -185,7 +155,7 @@ export const Route = createFileRoute("/api/public/vapi-webhook")({
 
         if (message.type === "tool-calls" && message.toolCallList?.length) {
           const callId = message.call?.id;
-          const { escalationNumber } = await resolveOrgForAssistant(
+          const { orgId, escalationNumber, timezone } = await resolveOrgForAssistant(
             supabaseAdmin,
             message.call?.assistantId,
           );
@@ -206,6 +176,8 @@ export const Route = createFileRoute("/api/public/vapi-webhook")({
                 ? await runTool(supabaseAdmin, tc, {
                     conversationId: conversation.id,
                     escalationNumber,
+                    orgId,
+                    timezone,
                   })
                 : "Something went wrong on our end - please try again.",
             })),

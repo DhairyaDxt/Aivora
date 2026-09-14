@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -90,6 +91,13 @@ export function ActionsTab({ config, onChange }: ActionsTabProps) {
           </div>
           <p className="text-sm text-muted-foreground mt-1">
             Enables the assistant to schedule meetings directly on your calendar.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Needs a{" "}
+            <Link to="/dashboard/connections" className="underline underline-offset-2">
+              Calendly connection
+            </Link>{" "}
+            — otherwise it just takes a message.
           </p>
         </div>
 

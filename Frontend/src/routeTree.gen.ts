@@ -16,6 +16,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardCalendlyCallbackRouteImport } from './routes/_authenticated/dashboard/calendly-callback'
 import { Route as AuthenticatedDashboardCallsRouteImport } from './routes/_authenticated/dashboard/calls'
 import { Route as AuthenticatedDashboardConnectionsRouteImport } from './routes/_authenticated/dashboard/connections'
 import { Route as AuthenticatedDashboardKnowledgeBaseRouteImport } from './routes/_authenticated/dashboard/knowledge-base'
@@ -58,6 +59,12 @@ const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardCalendlyCallbackRoute =
+  AuthenticatedDashboardCalendlyCallbackRouteImport.update({
+    id: '/calendly-callback',
+    path: '/calendly-callback',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 const AuthenticatedDashboardCallsRoute =
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
@@ -128,6 +136,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
@@ -146,6 +155,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/dashboard/calendly-callback': typeof AuthenticatedDashboardCalendlyCallbackRoute
   '/_authenticated/dashboard/calls': typeof AuthenticatedDashboardCallsRoute
   '/_authenticated/dashboard/connections': typeof AuthenticatedDashboardConnectionsRoute
   '/_authenticated/dashboard/knowledge-base': typeof AuthenticatedDashboardKnowledgeBaseRoute
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/dashboard'
     | '/onboarding'
+    | '/dashboard/calendly-callback'
     | '/dashboard/calls'
     | '/dashboard/connections'
     | '/dashboard/knowledge-base'
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/onboarding'
+    | '/dashboard/calendly-callback'
     | '/dashboard/calls'
     | '/dashboard/connections'
     | '/dashboard/knowledge-base'
@@ -196,6 +208,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
+    | '/_authenticated/dashboard/calendly-callback'
     | '/_authenticated/dashboard/calls'
     | '/_authenticated/dashboard/connections'
     | '/_authenticated/dashboard/knowledge-base'
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/calendly-callback': {
+      id: '/_authenticated/dashboard/calendly-callback'
+      path: '/calendly-callback'
+      fullPath: '/dashboard/calendly-callback'
+      preLoaderRoute: typeof AuthenticatedDashboardCalendlyCallbackRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/calls': {
       id: '/_authenticated/dashboard/calls'
       path: '/calls'
@@ -327,6 +347,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardCalendlyCallbackRoute: typeof AuthenticatedDashboardCalendlyCallbackRoute
   AuthenticatedDashboardCallsRoute: typeof AuthenticatedDashboardCallsRoute
   AuthenticatedDashboardConnectionsRoute: typeof AuthenticatedDashboardConnectionsRoute
   AuthenticatedDashboardKnowledgeBaseRoute: typeof AuthenticatedDashboardKnowledgeBaseRoute
@@ -338,6 +359,8 @@ interface AuthenticatedDashboardRouteChildren {
 
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
+    AuthenticatedDashboardCalendlyCallbackRoute:
+      AuthenticatedDashboardCalendlyCallbackRoute,
     AuthenticatedDashboardCallsRoute: AuthenticatedDashboardCallsRoute,
     AuthenticatedDashboardConnectionsRoute:
       AuthenticatedDashboardConnectionsRoute,

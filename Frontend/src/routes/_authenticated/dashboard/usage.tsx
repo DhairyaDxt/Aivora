@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/chart";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
 import { StatGrid } from "@/components/bizpilot/StatGrid";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/dashboard/usage")({
   head: () => ({
@@ -135,125 +136,128 @@ function Usage() {
   }, [inRange]);
 
   return (
-    <div className="px-6 py-8 md:px-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <SectionLabel index={1}>Usage</SectionLabel>
-          <h1 className="mt-2 text-2xl font-semibold">Calls & cost</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Call volume and cost for your voice receptionist. Test calls are excluded.
-          </p>
-        </div>
-        <div className="flex gap-1 rounded-lg border border-border p-1">
-          {RANGES.map((r) => (
-            <Button
-              key={r.days}
-              size="sm"
-              variant={days === r.days ? "default" : "ghost"}
-              onClick={() => setDays(r.days)}
-            >
-              {r.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <StatGrid
-        className="mt-6"
-        stats={[
-          { label: "Calls", value: String(totals.calls), sub: `Last ${days} days` },
-          { label: "Minutes talked", value: String(totals.minutes) },
-          { label: "Total cost", value: `$${totals.cost.toFixed(2)}` },
-          { label: "Avg. cost / call", value: `$${totals.avgCost.toFixed(3)}` },
-        ]}
-      />
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="panel p-4">
-          <h2 className="text-sm font-medium text-muted-foreground">Calls per day</h2>
-          {callsByDay.length === 0 ? (
-            <p className="py-16 text-center text-sm text-muted-foreground">
-              No calls in this range yet.
+    <div className="relative overflow-hidden px-6 py-8 md:px-10">
+      <AuroraBackground />
+      <div className="relative">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <SectionLabel index={1}>Usage</SectionLabel>
+            <h1 className="mt-2 text-2xl font-bold">Calls & cost</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Call volume and cost for your voice receptionist. Test calls are excluded.
             </p>
-          ) : (
-            <ChartContainer config={callsChartConfig} className="mt-2 aspect-auto h-64 w-full">
-              <BarChart
-                key={JSON.stringify(callsByDay)}
-                data={callsByDay}
-                margin={{ left: 0, right: 8, top: 8 }}
+          </div>
+          <div className="flex gap-1 rounded-lg border border-border p-1">
+            {RANGES.map((r) => (
+              <Button
+                key={r.days}
+                size="sm"
+                variant={days === r.days ? "default" : "ghost"}
+                onClick={() => setDays(r.days)}
               >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  interval="preserveStartEnd"
-                />
-                <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
-                <ChartTooltip content={<ChartTooltipContent hideLabel={false} />} />
-                <Bar
-                  dataKey="calls"
-                  fill="var(--color-calls)"
-                  radius={[4, 4, 0, 0]}
-                  isAnimationActive={false}
-                />
-              </BarChart>
-            </ChartContainer>
-          )}
+                {r.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <div className="panel p-4">
-          <h2 className="text-sm font-medium text-muted-foreground">Cost per day</h2>
-          {costByDay.length === 0 ? (
-            <p className="py-16 text-center text-sm text-muted-foreground">
-              No cost data in this range yet.
-            </p>
-          ) : (
-            <ChartContainer config={costChartConfig} className="mt-2 aspect-auto h-64 w-full">
-              <BarChart
-                key={JSON.stringify(costByDay)}
-                data={costByDay}
-                margin={{ left: 0, right: 8, top: 8 }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={40}
-                  tickFormatter={(v: number) => `$${v}`}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      hideLabel={false}
-                      formatter={(value) => `$${Number(value).toFixed(3)}`}
-                    />
-                  }
-                />
-                <Bar
-                  dataKey="cost"
-                  fill="var(--color-cost)"
-                  radius={[4, 4, 0, 0]}
-                  isAnimationActive={false}
-                />
-              </BarChart>
-            </ChartContainer>
-          )}
+        <StatGrid
+          className="mt-6"
+          stats={[
+            { label: "Calls", value: String(totals.calls), sub: `Last ${days} days` },
+            { label: "Minutes talked", value: String(totals.minutes) },
+            { label: "Total cost", value: `$${totals.cost.toFixed(2)}` },
+            { label: "Avg. cost / call", value: `$${totals.avgCost.toFixed(3)}` },
+          ]}
+        />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="panel p-4">
+            <h2 className="text-sm font-medium text-muted-foreground">Calls per day</h2>
+            {callsByDay.length === 0 ? (
+              <p className="py-16 text-center text-sm text-muted-foreground">
+                No calls in this range yet.
+              </p>
+            ) : (
+              <ChartContainer config={callsChartConfig} className="mt-2 aspect-auto h-64 w-full">
+                <BarChart
+                  key={JSON.stringify(callsByDay)}
+                  data={callsByDay}
+                  margin={{ left: 0, right: 8, top: 8 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent hideLabel={false} />} />
+                  <Bar
+                    dataKey="calls"
+                    fill="var(--color-calls)"
+                    radius={[4, 4, 0, 0]}
+                    isAnimationActive={false}
+                  />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </div>
+
+          <div className="panel p-4">
+            <h2 className="text-sm font-medium text-muted-foreground">Cost per day</h2>
+            {costByDay.length === 0 ? (
+              <p className="py-16 text-center text-sm text-muted-foreground">
+                No cost data in this range yet.
+              </p>
+            ) : (
+              <ChartContainer config={costChartConfig} className="mt-2 aspect-auto h-64 w-full">
+                <BarChart
+                  key={JSON.stringify(costByDay)}
+                  data={costByDay}
+                  margin={{ left: 0, right: 8, top: 8 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={40}
+                    tickFormatter={(v: number) => `$${v}`}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        hideLabel={false}
+                        formatter={(value) => `$${Number(value).toFixed(3)}`}
+                      />
+                    }
+                  />
+                  <Bar
+                    dataKey="cost"
+                    fill="var(--color-cost)"
+                    radius={[4, 4, 0, 0]}
+                    isAnimationActive={false}
+                  />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </div>
         </div>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          Cost figures come from Vapi's per-call cost report and may take a moment to appear after a
+          call ends.
+        </p>
       </div>
-
-      <p className="mt-4 text-xs text-muted-foreground">
-        Cost figures come from Vapi's per-call cost report and may take a moment to appear after a
-        call ends.
-      </p>
     </div>
   );
 }

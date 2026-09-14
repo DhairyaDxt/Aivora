@@ -119,6 +119,24 @@ export type PromptInputs = {
 
 const KB_CHAR_BUDGET = 12000;
 
+function currentTimeLine(timezone: string | undefined): string {
+  if (!timezone) return "";
+  try {
+    const now = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date());
+    return `Right now it is ${now} (${timezone}). Resolve relative dates the caller mentions ("tomorrow", "next Tuesday", "in an hour") against this.`;
+  } catch {
+    return "";
+  }
+}
+
 export function buildSystemPrompt(input: PromptInputs): string {
   const { business, org, config, knowledge } = input;
   const name = business?.display_name || org?.name || "this business";
@@ -129,6 +147,7 @@ export function buildSystemPrompt(input: PromptInputs): string {
     org?.industry_vertical ? `The business operates in: ${org.industry_vertical}.` : "",
     business?.description ? `About the business: ${business.description}` : "",
     org?.timezone ? `All times you mention are in the ${org.timezone} timezone.` : "",
+    currentTimeLine(org?.timezone),
     hours ? `Opening hours: ${JSON.stringify(hours)}` : "",
     business?.address ? `Address: ${JSON.stringify(business.address)}` : "",
     "",
@@ -160,16 +179,63 @@ export function buildSystemPrompt(input: PromptInputs): string {
   return lines.filter(Boolean).join("\n");
 }
 
+function timezoneOffsetMs(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
+  return asUtc - date.getTime();
+}
+
+/**
+ * The model resolves caller-relative times ("tomorrow at 3pm") against the
+ * current-time line in the system prompt and returns an ISO 8601 string, but
+ * it usually omits a UTC offset - which JS would otherwise parse as the
+ * *server's* local time, not the business's. If the string already carries
+ * an offset (trailing Z or +hh:mm), it's used as-is; otherwise it's treated
+ * as wall-clock time in `timezone`.
+ */
+export function resolveCallerTime(requestedTime: string, timezone: string): Date | null {
+  const hasOffset = /Z$|[+-]\d{2}:?\d{2}$/.test(requestedTime.trim());
+  if (hasOffset) {
+    const parsed = new Date(requestedTime);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  const guess = new Date(`${requestedTime}Z`);
+  if (Number.isNaN(guess.getTime())) return null;
+  return new Date(guess.getTime() - timezoneOffsetMs(guess, timezone));
+}
+
 export const VAPI_FUNCTION_DEFS: Record<string, unknown> = {
   check_availability: {
     type: "function",
     function: {
       name: "check_availability",
-      description: "Check whether the business has an open slot at a requested time.",
+      description:
+        "Look up real open appointment slots near a time the caller asked about. Call this before book_appointment so you can offer the caller a real, bookable time rather than guessing.",
       parameters: {
         type: "object",
         properties: {
-          requested_time: { type: "string", description: "The time the caller asked about." },
+          requested_time: {
+            type: "string",
+            description:
+              "The date/time the caller is interested in, resolved to an exact ISO 8601 timestamp (e.g. 2026-09-08T15:00:00) using the current date and timezone given above. If the caller gave no specific time, use the current date.",
+          },
           service: { type: "string", description: "What the caller wants booked." },
         },
         required: ["requested_time"],
@@ -180,15 +246,28 @@ export const VAPI_FUNCTION_DEFS: Record<string, unknown> = {
     type: "function",
     function: {
       name: "book_appointment",
-      description: "Book an appointment for the caller.",
+      description:
+        "Book an appointment for the caller at an exact time you already confirmed is open via check_availability. Always get the caller's name and a real email address first - Calendly emails the confirmation and calendar invite to it.",
       parameters: {
         type: "object",
         properties: {
-          customer_name: { type: "string" },
-          requested_time: { type: "string" },
-          service: { type: "string" },
+          customer_name: { type: "string", description: "The caller's full name." },
+          customer_email: {
+            type: "string",
+            description: "The caller's email address, for the confirmation and calendar invite.",
+          },
+          customer_phone: {
+            type: "string",
+            description: "The caller's phone number, for an SMS reminder if available.",
+          },
+          requested_time: {
+            type: "string",
+            description:
+              "The exact slot to book, as an ISO 8601 timestamp matching one returned by check_availability.",
+          },
+          service: { type: "string", description: "What the caller wants booked." },
         },
-        required: ["customer_name", "requested_time"],
+        required: ["customer_name", "customer_email", "requested_time"],
       },
     },
   },
@@ -450,5 +529,12 @@ export function buildAssistantPayload(args: {
     ...(config.call_summary_enabled !== false ? { analysisPlan: { summaryPlan: {} } } : {}),
     ...(args.serverUrl ? { server: { url: args.serverUrl } } : {}),
     ...(args.metadata ? { metadata: args.metadata } : {}),
+    // When there's no serverUrl (local dev - Vapi's cloud can't reach
+    // "localhost"), function tools fall back to client-side delivery: Vapi
+    // sends a "tool-calls" message to the browser instead of calling a
+    // webhook, and the client (TestCallDrawer) executes it and reports the
+    // result back into the conversation via vapi.addMessage(). This needs
+    // "tool-calls" in clientMessages or the browser never receives it.
+    clientMessages: ["transcript", "tool-calls", "status-update", "speech-update", "hang"],
   };
 }

@@ -9,14 +9,14 @@ export function Marquee({ items }: { items: ReactNode[] }) {
       {items.map((item, index) => (
         <Fragment key={`${copy}-${index}`}>
           <span className="px-6 py-3 whitespace-nowrap label-tag">{item}</span>
-          <span className="text-border">—</span>
+          <span className="text-[var(--grad-to)]">✦</span>
         </Fragment>
       ))}
     </div>
   );
 
   return (
-    <div className="overflow-hidden border-y border-border">
+    <div className="overflow-hidden border-y border-white/[0.06] bg-white/[0.02]">
       <div className="flex w-max animate-marquee">
         {row("a")}
         {row("b")}

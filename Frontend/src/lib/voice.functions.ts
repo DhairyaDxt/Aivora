@@ -5,6 +5,13 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Json = Record<string, unknown>;
 
 function webhookUrl(): string | undefined {
+  // Vapi's cloud servers can't reach a bare "localhost" origin, so tool
+  // calls (check_availability, book_appointment, etc.) would just go
+  // unanswered in local dev. Set PUBLIC_APP_URL to a tunnel (e.g. ngrok)
+  // pointed at this dev server to test them for real.
+  const override = process.env["PUBLIC_APP_URL"];
+  if (override) return `${override.replace(/\/$/, "")}/api/public/vapi-webhook`;
+
   try {
     const req = getRequest();
     const origin = new URL(req.url).origin;
@@ -468,6 +475,64 @@ export const startTestCall = createServerFn({ method: "POST" })
     }
 
     return { mode: "phone" as const, callId: call.id, conversationId: conversation?.id ?? null };
+  });
+
+/**
+ * Executes a receptionist tool call (check_availability, book_appointment,
+ * take_message, transfer_call) for a browser Test Call. Vapi's cloud can't
+ * reach a bare "localhost" server URL, so during local dev the assistant is
+ * synced as a client-side tool (see buildAssistantPayload's clientMessages)
+ * and TestCallDrawer calls this authenticated endpoint directly instead -
+ * same origin, so it works without any public tunnel.
+ */
+export const runTestCallTool = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: {
+      serviceId: string;
+      conversationId: string;
+      name: string;
+      arguments: Record<string, unknown>;
+    }) => data,
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+
+    const { data: service } = await supabase
+      .from("services")
+      .select("id, org_id, organizations(timezone)")
+      .eq("id", data.serviceId)
+      .maybeSingle();
+    if (!service) throw new Error("That receptionist could not be found.");
+
+    const { data: config } = await supabase
+      .from("voice_agent_configs")
+      .select("escalation_number")
+      .eq("service_id", service.id)
+      .maybeSingle();
+
+    const { data: conversation } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("id", data.conversationId)
+      .eq("service_id", service.id)
+      .maybeSingle();
+    if (!conversation) throw new Error("That test call could not be found.");
+
+    const org = service.organizations as { timezone: string } | { timezone: string }[] | null;
+    const timezone = (Array.isArray(org) ? org[0]?.timezone : org?.timezone) ?? "UTC";
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { runVoiceTool } = await import("./voiceTools.server");
+
+    return {
+      result: await runVoiceTool(supabaseAdmin, data.name, data.arguments, {
+        conversationId: conversation.id,
+        escalationNumber: config?.escalation_number ?? null,
+        orgId: service.org_id,
+        timezone,
+      }),
+    };
   });
 
 export const goLive = createServerFn({ method: "POST" })

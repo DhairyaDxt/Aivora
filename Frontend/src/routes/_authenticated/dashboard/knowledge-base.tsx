@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/dashboard/knowledge-base")({
   head: () => ({
@@ -158,144 +159,147 @@ function KnowledgeBase() {
   };
 
   return (
-    <div className="px-6 py-10 md:px-10 md:py-14">
-      <SectionLabel index={3}>Knowledge base</SectionLabel>
-      <h1 className="mt-2 text-3xl font-semibold">Knowledge base</h1>
-      <p className="mt-3 max-w-xl text-muted-foreground">
-        Everything here can be used by your receptionist when it answers a caller.
-      </p>
+    <div className="relative overflow-hidden px-6 py-10 md:px-10 md:py-14">
+      <AuroraBackground />
+      <div className="relative">
+        <SectionLabel index={3}>Knowledge base</SectionLabel>
+        <h1 className="mt-2 text-3xl font-bold">Knowledge base</h1>
+        <p className="mt-3 max-w-xl text-muted-foreground">
+          Everything here can be used by your receptionist when it answers a caller.
+        </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[380px_1fr]">
-        <form onSubmit={add} className="panel h-fit space-y-5 p-6">
-          <h2 className="text-lg font-semibold">Add an entry</h2>
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="kb-title">{type === "faq" ? "Question" : "Title"}</Label>
-            <Input
-              id="kb-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={
-                type === "faq" ? "Do you offer emergency callouts?" : "Cancellation policy"
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="kb-content">{type === "faq" ? "Answer" : "Details"}</Label>
-            <Textarea
-              id="kb-content"
-              required
-              rows={5}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write it the way you'd say it on the phone."
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={busy || !content}>
-            {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Add to knowledge base
-          </Button>
+        <div className="mt-10 grid gap-8 lg:grid-cols-[380px_1fr]">
+          <form onSubmit={add} className="panel h-fit space-y-5 p-6">
+            <h2 className="text-lg font-semibold">Add an entry</h2>
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kb-title">{type === "faq" ? "Question" : "Title"}</Label>
+              <Input
+                id="kb-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={
+                  type === "faq" ? "Do you offer emergency callouts?" : "Cancellation policy"
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kb-content">{type === "faq" ? "Answer" : "Details"}</Label>
+              <Textarea
+                id="kb-content"
+                required
+                rows={5}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write it the way you'd say it on the phone."
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={busy || !content}>
+              {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+              Add to knowledge base
+            </Button>
 
-          <div className="border-t border-border pt-5">
-            <Label htmlFor="kb-doc" className="mb-2 block">
-              Upload a document
-            </Label>
-            <label
-              htmlFor="kb-doc"
-              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground hover:bg-secondary"
-            >
-              {uploading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Upload className="size-4" />
-              )}
-              {uploading ? "Reading document..." : "Choose a file"}
-            </label>
-            <input
-              id="kb-doc"
-              type="file"
-              className="hidden"
-              onChange={upload}
-              disabled={uploading}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              We'll read it and automatically split it into knowledge base entries.
-            </p>
-          </div>
-        </form>
+            <div className="border-t border-border pt-5">
+              <Label htmlFor="kb-doc" className="mb-2 block">
+                Upload a document
+              </Label>
+              <label
+                htmlFor="kb-doc"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground hover:bg-secondary"
+              >
+                {uploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                {uploading ? "Reading document..." : "Choose a file"}
+              </label>
+              <input
+                id="kb-doc"
+                type="file"
+                className="hidden"
+                onChange={upload}
+                disabled={uploading}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                We'll read it and automatically split it into knowledge base entries.
+              </p>
+            </div>
+          </form>
 
-        <div className="panel overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries.length === 0 ? (
+          <div className="panel overflow-hidden">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    Nothing here yet. Add your first answer on the left.
-                  </TableCell>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Content</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead />
                 </TableRow>
-              ) : (
-                entries.map((entry) => {
-                  const indexed = Boolean(entry.embedded_at);
-                  return (
-                    <TableRow key={entry.id}>
-                      <TableCell className="whitespace-nowrap text-muted-foreground">
-                        {TYPES.find((t) => t.value === entry.type)?.label ?? entry.type}
-                      </TableCell>
-                      <TableCell className="font-medium">{entry.title ?? "—"}</TableCell>
-                      <TableCell className="max-w-md truncate text-muted-foreground">
-                        {entry.content}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {indexed ? (
-                          "Ready"
-                        ) : (
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-status-testing"
-                            onClick={() => retryEmbedding(entry.id)}
-                          >
-                            Not indexed — retry
+              </TableHeader>
+              <TableBody>
+                {entries.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      Nothing here yet. Add your first answer on the left.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  entries.map((entry) => {
+                    const indexed = Boolean(entry.embedded_at);
+                    return (
+                      <TableRow key={entry.id}>
+                        <TableCell className="whitespace-nowrap text-muted-foreground">
+                          {TYPES.find((t) => t.value === entry.type)?.label ?? entry.type}
+                        </TableCell>
+                        <TableCell className="font-medium">{entry.title ?? "—"}</TableCell>
+                        <TableCell className="max-w-md truncate text-muted-foreground">
+                          {entry.content}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {indexed ? (
+                            "Ready"
+                          ) : (
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="h-auto p-0 text-status-testing"
+                              onClick={() => retryEmbedding(entry.id)}
+                            >
+                              Not indexed — retry
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" onClick={() => remove(entry.id)}>
+                            <Trash2 className="size-4" />
                           </Button>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => remove(entry.id)}>
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { COUNTRIES, LANGUAGES, TIMEZONES, VERTICALS, slugify, DEFAULT_HOURS } from "@/lib/bizpilot";
 import { PhoneCall } from "lucide-react";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -104,18 +105,21 @@ function Onboarding() {
   if (isLoading) return <div className="p-10 text-sm text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="min-h-screen bg-background px-6 py-16">
-      <div className="mx-auto max-w-xl">
-        <span className="flex size-10 items-center justify-center rounded-md border border-border">
-          <PhoneCall className="size-5" />
+    <div className="relative min-h-screen overflow-hidden bg-background px-6 py-16">
+      <AuroraBackground />
+      <div className="relative mx-auto max-w-xl">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)] to-[var(--grad-to)] shadow-[0_4px_16px_-4px_var(--glow)]">
+          <PhoneCall className="size-5 text-white" />
         </span>
-        <SectionLabel index={0}>Onboarding</SectionLabel>
-        <h1 className="mt-2 text-3xl font-semibold">Tell us about your business</h1>
+        <div className="mt-6">
+          <SectionLabel index={0}>Onboarding</SectionLabel>
+        </div>
+        <h1 className="mt-2 text-3xl font-bold">Tell us about your business</h1>
         <p className="mt-3 text-muted-foreground">
           Your receptionist uses these basics to greet callers correctly.
         </p>
 
-        <form onSubmit={submit} className="panel mt-10 space-y-6 p-8">
+        <form onSubmit={submit} className="glass glow mt-10 space-y-6 p-8">
           <div className="space-y-2">
             <Label htmlFor="name">Business name</Label>
             <Input

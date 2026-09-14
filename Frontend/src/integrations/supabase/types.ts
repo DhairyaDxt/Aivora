@@ -128,6 +128,71 @@ export type Database = {
           },
         ];
       };
+      calendly_connections: {
+        Row: {
+          access_token_secret_ref: string;
+          calendly_user_uri: string;
+          connected_at: string | null;
+          event_type_duration_minutes: number | null;
+          event_type_name: string | null;
+          event_type_uri: string | null;
+          org_id: string;
+          organization_uri: string | null;
+          owner_email: string | null;
+          owner_name: string | null;
+          refresh_token_secret_ref: string;
+          scheduling_url: string | null;
+          status: string;
+          timezone: string | null;
+          token_expires_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          access_token_secret_ref: string;
+          calendly_user_uri: string;
+          connected_at?: string | null;
+          event_type_duration_minutes?: number | null;
+          event_type_name?: string | null;
+          event_type_uri?: string | null;
+          org_id: string;
+          organization_uri?: string | null;
+          owner_email?: string | null;
+          owner_name?: string | null;
+          refresh_token_secret_ref: string;
+          scheduling_url?: string | null;
+          status?: string;
+          timezone?: string | null;
+          token_expires_at: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          access_token_secret_ref?: string;
+          calendly_user_uri?: string;
+          connected_at?: string | null;
+          event_type_duration_minutes?: number | null;
+          event_type_name?: string | null;
+          event_type_uri?: string | null;
+          org_id?: string;
+          organization_uri?: string | null;
+          owner_email?: string | null;
+          owner_name?: string | null;
+          refresh_token_secret_ref?: string;
+          scheduling_url?: string | null;
+          status?: string;
+          timezone?: string | null;
+          token_expires_at?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "calendly_connections_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       call_logs: {
         Row: {
           conversation_id: string | null;
@@ -651,6 +716,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      delete_calendly_secret: { Args: { p_name: string }; Returns: undefined };
       is_org_member: { Args: { target_org: string }; Returns: boolean };
       match_kb_entries: {
         Args: {
@@ -665,6 +731,11 @@ export type Database = {
           similarity: number;
           title: string;
         }[];
+      };
+      read_calendly_secret: { Args: { p_name: string }; Returns: string };
+      store_calendly_secret: {
+        Args: { p_name: string; p_secret: string };
+        Returns: string;
       };
       store_twilio_subaccount_secret: {
         Args: { p_name: string; p_secret: string };

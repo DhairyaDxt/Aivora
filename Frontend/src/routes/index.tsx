@@ -5,6 +5,11 @@ import { Marquee } from "@/components/bizpilot/Marquee";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
 import { StatGrid } from "@/components/bizpilot/StatGrid";
 import { StatusDot } from "@/components/bizpilot/StatusDot";
+import { Spotlight } from "@/components/bizpilot/Spotlight";
+import { Waveform } from "@/components/bizpilot/Waveform";
+import { TypingLine } from "@/components/bizpilot/TypingLine";
+import { ScrollProgress } from "@/components/bizpilot/ScrollProgress";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 import {
   PhoneCall,
   CalendarCheck,
@@ -77,13 +82,11 @@ const capabilities = [
 
 function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-2">
-      <span className="relative flex size-2">
-        <span className="absolute inline-flex size-full animate-ping rounded-full bg-foreground opacity-50" />
-        <span className="relative inline-flex size-2 rounded-full bg-foreground" />
+    <Link to="/" className="flex items-center gap-2.5">
+      <span className="relative flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)] to-[var(--grad-to)] shadow-[0_4px_16px_-4px_var(--glow)]">
+        <PhoneCall className="size-4 text-white" />
       </span>
-      <span className="font-semibold">biz.pilot</span>
-      <span className="text-muted-foreground">/ voice-ai</span>
+      <span className="font-display font-bold">biz.pilot</span>
     </Link>
   );
 }
@@ -91,7 +94,8 @@ function Logo() {
 function Landing() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
+      <ScrollProgress />
+      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-sm">
           <Logo />
           <div className="flex items-center gap-1">
@@ -106,62 +110,82 @@ function Landing() {
       </header>
 
       <main>
-        <section className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24">
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <StatusDot>ANSWERING CALLS · LIVE</StatusDot>
-            <span className="label-tag">V.1.0 — VOICE CHANNEL</span>
-          </div>
-
-          <Reveal>
-            <h1 className="max-w-3xl text-4xl leading-[1.1] font-semibold md:text-6xl">
-              An AI receptionist
-              <br />
-              that answers <span className="text-muted-foreground">every call.</span>
-              <span className="cursor-blink" />
-            </h1>
-          </Reveal>
-
-          <Reveal delayMs={120}>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Give BizPilot your hours, services and tone of voice. It picks up the phone, answers
-              questions, takes messages and transfers the calls that need you.
-            </p>
-          </Reveal>
-
-          <Reveal delayMs={220}>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <Button size="lg" asChild>
-                <Link to="/signup">
-                  Set up my receptionist <ArrowUpRight className="size-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/login">I already have an account</Link>
-              </Button>
+        <section className="relative overflow-hidden">
+          <AuroraBackground />
+          <Spotlight />
+          <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24">
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <StatusDot>ANSWERING CALLS · LIVE</StatusDot>
+              <span className="label-tag">V.1.0 — VOICE CHANNEL</span>
             </div>
-          </Reveal>
 
-          <Reveal delayMs={320} className="mt-16">
-            <StatGrid stats={stats} />
-          </Reveal>
+            <Reveal>
+              <h1 className="max-w-3xl text-4xl leading-[1.1] font-bold md:text-6xl">
+                An AI receptionist that
+                <br />
+                <span className="text-gradient">answers every call.</span>
+              </h1>
+            </Reveal>
+
+            <Reveal delayMs={120}>
+              <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+                Give BizPilot your hours, services and tone of voice. It picks up the phone, answers
+                questions, takes messages and transfers the calls that need you.
+              </p>
+            </Reveal>
+
+            <Reveal delayMs={200}>
+              <div className="mt-6 flex items-center gap-3 text-sm text-muted-foreground">
+                <Waveform />
+                <TypingLine
+                  prefix="Ask it "
+                  words={[
+                    '"what are your hours?"',
+                    '"can I book Friday?"',
+                    '"is anyone there?"',
+                    '"how much does it cost?"',
+                  ]}
+                />
+              </div>
+            </Reveal>
+
+            <Reveal delayMs={280}>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Button size="lg" asChild>
+                  <Link to="/signup">
+                    Set up my receptionist <ArrowUpRight className="size-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/login">I already have an account</Link>
+                </Button>
+              </div>
+            </Reveal>
+
+            <Reveal delayMs={360} className="mt-16">
+              <StatGrid stats={stats} />
+            </Reveal>
+          </div>
         </section>
 
         <Marquee items={capabilities} />
 
-        <section className="border-b border-border">
+        <section className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <Reveal>
               <SectionLabel index={1}>What it does</SectionLabel>
-              <h2 className="mt-4 max-w-2xl text-3xl font-semibold md:text-4xl">
+              <h2 className="mt-4 max-w-2xl text-3xl font-bold md:text-4xl">
                 One receptionist, every job your front desk used to do.
               </h2>
             </Reveal>
 
-            <div className="mt-14 grid gap-px overflow-hidden border border-border sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((feature, index) => (
                 <Reveal key={feature.title} delayMs={index * 80}>
-                  <div className="group h-full border-border bg-background p-6 transition-colors hover:bg-secondary/40 sm:border-r sm:last:border-r-0">
-                    <feature.icon className="size-5 text-muted-foreground transition-colors group-hover:text-foreground" />
+                  <div className="glass hover-lift group h-full p-6">
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)]/25 to-[var(--grad-to)]/25 text-[var(--grad-to)] transition-colors group-hover:from-[var(--grad-from)] group-hover:to-[var(--grad-to)] group-hover:text-white">
+                      <feature.icon className="size-5" />
+                    </span>
                     <h3 className="mt-4 text-base font-semibold">{feature.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       {feature.body}
@@ -173,12 +197,14 @@ function Landing() {
           </div>
         </section>
 
-        <section>
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <Reveal className="panel flex flex-col items-start justify-between gap-6 p-10 sm:flex-row sm:items-center">
+        <section className="relative overflow-hidden">
+          <AuroraBackground />
+          <div className="relative mx-auto max-w-6xl px-6 py-20">
+            <Reveal className="gradient-border hover-lift glow relative flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl p-10 sm:flex-row sm:items-center">
+              <Spotlight />
               <div>
                 <SectionLabel index={2}>Get started</SectionLabel>
-                <h2 className="mt-3 text-2xl font-semibold md:text-3xl">
+                <h2 className="mt-3 text-2xl font-bold md:text-3xl">
                   Set up your receptionist today.
                 </h2>
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
@@ -195,7 +221,7 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-border">
+      <footer className="border-t border-white/[0.06]">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <span>BizPilot — one channel at a time, starting with voice.</span>
           <span className="label-tag">© {new Date().getFullYear()}</span>

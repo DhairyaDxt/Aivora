@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import type VapiClient from "@vapi-ai/web";
-import { getVoicePublicKey, startTestCall } from "@/lib/voice.functions";
+import { getVoicePublicKey, startTestCall, runTestCallTool } from "@/lib/voice.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Mic, PhoneOutgoing, Square } from "lucide-react";
+import { Waveform } from "@/components/bizpilot/Waveform";
 
 type Line = { role: string; text: string };
 
@@ -28,11 +29,13 @@ export function TestCallDrawer({
 }) {
   const start = useServerFn(startTestCall);
   const publicKey = useServerFn(getVoicePublicKey);
+  const runTool = useServerFn(runTestCallTool);
   const [status, setStatus] = useState<"idle" | "connecting" | "live" | "ended">("idle");
   const [lines, setLines] = useState<Line[]>([]);
   const [toNumber, setToNumber] = useState("");
   const [busy, setBusy] = useState(false);
   const vapiRef = useRef<VapiClient | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) stopWeb();
@@ -74,6 +77,8 @@ export function TestCallDrawer({
       );
       if (!VapiCtor) throw new Error("Could not load the voice calling library.");
 
+      conversationIdRef.current = session.conversationId ?? null;
+
       const vapi = new VapiCtor(key);
       vapiRef.current = vapi;
       setStatus("connecting");
@@ -91,6 +96,7 @@ export function TestCallDrawer({
           role?: string;
           transcript?: string;
           transcriptType?: string;
+          toolCallList?: Array<{ id: string; function: { name: string; arguments?: unknown } }>;
         }) => {
           if (message.type === "transcript" && message.transcriptType === "final") {
             setLines((current) => [
@@ -100,6 +106,66 @@ export function TestCallDrawer({
                 text: message.transcript ?? "",
               },
             ]);
+            return;
+          }
+
+          // Vapi's cloud can't reach "localhost", so the assistant was synced
+          // with no server URL and function tools fall back to client-side
+          // delivery here instead of a webhook (see buildAssistantPayload).
+          // The model can't see a "result" directly - addMessage() is the
+          // documented workaround for feeding one back into its context.
+          if (message.type === "tool-calls" && message.toolCallList?.length) {
+            const conversationId = conversationIdRef.current;
+            for (const toolCall of message.toolCallList) {
+              void (async () => {
+                let args: Record<string, unknown> = {};
+                const raw = toolCall.function.arguments;
+                if (typeof raw === "string") {
+                  try {
+                    args = raw ? JSON.parse(raw) : {};
+                  } catch {
+                    args = {};
+                  }
+                } else if (raw && typeof raw === "object") {
+                  args = raw as Record<string, unknown>;
+                }
+
+                let resultText = "Something went wrong running that.";
+                if (conversationId) {
+                  try {
+                    const { result } = await runTool({
+                      data: {
+                        serviceId,
+                        conversationId,
+                        name: toolCall.function.name,
+                        arguments: args,
+                      },
+                    });
+                    resultText = result;
+                  } catch (error) {
+                    resultText =
+                      error instanceof Error ? error.message : "Something went wrong running that.";
+                  }
+                }
+
+                setLines((current) => [
+                  ...current,
+                  { role: "Tool", text: `${toolCall.function.name} → ${resultText}` },
+                ]);
+
+                const addMessage = (
+                  vapi as unknown as {
+                    addMessage?: (message: { role: string; content: string }) => void;
+                  }
+                ).addMessage;
+                if (typeof addMessage === "function") {
+                  addMessage.call(vapi, {
+                    role: "system",
+                    content: `Result of ${toolCall.function.name}: ${resultText}`,
+                  });
+                }
+              })();
+            }
           }
         },
       );
@@ -135,7 +201,10 @@ export function TestCallDrawer({
 
         <div className="flex-1 overflow-y-auto px-4 py-5">
           <div className="panel space-y-4 p-4">
-            <p className="text-sm font-medium">Talk in your browser</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Talk in your browser</p>
+              {status === "live" ? <Waveform className="text-foreground" /> : null}
+            </div>
             <p className="text-sm text-muted-foreground">
               {status === "live"
                 ? "Connected. Start talking."

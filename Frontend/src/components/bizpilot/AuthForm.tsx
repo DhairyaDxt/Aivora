@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneCall, ArrowUpRight } from "lucide-react";
+import { Reveal } from "@/components/bizpilot/Reveal";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
@@ -51,17 +53,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <Link to="/" className="mb-10 flex items-center gap-2 text-foreground">
-          <span className="flex size-9 items-center justify-center rounded-md border border-border">
-            <PhoneCall className="size-4" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+      <AuroraBackground />
+      <Reveal className="glass glow relative w-full max-w-sm p-8">
+        <Link to="/" className="mb-10 flex items-center gap-2.5 text-foreground">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)] to-[var(--grad-to)] shadow-[0_4px_16px_-4px_var(--glow)]">
+            <PhoneCall className="size-4 text-white" />
           </span>
-          <span className="font-semibold">biz.pilot</span>
+          <span className="font-display font-bold">biz.pilot</span>
         </Link>
 
         <p className="label-tag">{mode === "signup" ? "01 / CREATE ACCOUNT" : "01 / SIGN IN"}</p>
-        <h1 className="mt-3 text-2xl font-semibold">
+        <h1 className="mt-3 text-2xl font-bold">
           {mode === "signup" ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -131,7 +134,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             </>
           )}
         </p>
-      </div>
+      </Reveal>
     </div>
   );
 }

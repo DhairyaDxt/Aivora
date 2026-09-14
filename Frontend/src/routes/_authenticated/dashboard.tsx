@@ -33,33 +33,31 @@ function DashboardLayout() {
     navigate({ to: "/login" });
   };
 
+  const linkClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm tracking-tight transition-all",
+      active
+        ? "bg-gradient-to-r from-[var(--grad-from)] to-[var(--grad-to)] font-medium text-white shadow-[0_4px_16px_-4px_var(--glow)]"
+        : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+    );
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto flex max-w-[1400px]">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 md:flex">
-          <Link to="/dashboard" className="mb-8 flex items-center gap-2 px-2">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-foreground opacity-50" />
-              <span className="relative inline-flex size-2 rounded-full bg-foreground" />
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/[0.06] bg-sidebar px-4 py-6 md:flex">
+          <Link to="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
+            <span className="relative flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--grad-from)] to-[var(--grad-to)] shadow-[0_4px_16px_-4px_var(--glow)]">
+              <PhoneCall className="size-4 text-white" />
             </span>
-            <span className="font-semibold">biz.pilot</span>
+            <span className="font-display font-bold">biz.pilot</span>
           </Link>
 
-          <nav className="space-y-0.5">
+          <nav className="space-y-1">
             {nav.map((item) => {
               const active =
                 "exact" in item && item.exact ? pathname === item.to : pathname.startsWith(item.to);
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-3 border-l-2 px-3 py-2 text-sm tracking-tight transition-colors",
-                    active
-                      ? "border-l-foreground bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                      : "border-l-transparent text-muted-foreground hover:border-l-border hover:bg-sidebar-accent/50 hover:text-foreground",
-                  )}
-                >
+                <Link key={item.to} to={item.to} className={linkClass(active)}>
                   <item.icon className="size-4" />
                   {item.label}
                 </Link>
@@ -69,12 +67,7 @@ function DashboardLayout() {
               <Link
                 to="/dashboard/voice/$serviceId"
                 params={{ serviceId: service.id }}
-                className={cn(
-                  "flex items-center gap-3 border-l-2 px-3 py-2 text-sm tracking-tight transition-colors",
-                  pathname.includes("/voice/")
-                    ? "border-l-foreground bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                    : "border-l-transparent text-muted-foreground hover:border-l-border hover:bg-sidebar-accent/50 hover:text-foreground",
-                )}
+                className={linkClass(pathname.includes("/voice/"))}
               >
                 <PhoneCall className="size-4" />
                 Voice receptionist

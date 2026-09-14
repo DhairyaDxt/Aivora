@@ -15,6 +15,7 @@ import { KnowledgeTab } from "./tabs/KnowledgeTab";
 import { AdvancedTab } from "./tabs/AdvancedTab";
 import { TestCallDrawer } from "@/components/bizpilot/TestCallDrawer";
 import { SectionLabel } from "@/components/bizpilot/SectionLabel";
+import { AuroraBackground } from "@/components/bizpilot/AuroraBackground";
 import { goLive, syncAssistant } from "@/lib/voice.functions";
 import { Database } from "@/integrations/supabase/types";
 
@@ -85,8 +86,9 @@ export function VoiceBuilder() {
     return <div className="p-8 text-sm text-muted-foreground">Loading configuration...</div>;
 
   return (
-    <div className="mx-auto flex h-full max-w-5xl flex-col space-y-4 p-8">
-      <div className="flex items-center justify-between">
+    <div className="relative mx-auto flex h-full max-w-5xl flex-col space-y-4 overflow-hidden p-8">
+      <AuroraBackground />
+      <div className="relative flex items-center justify-between">
         <div>
           <SectionLabel index={4}>Voice receptionist</SectionLabel>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Voice Receptionist</h1>
@@ -111,7 +113,7 @@ export function VoiceBuilder() {
         </div>
       </div>
 
-      <Tabs defaultValue="persona" className="flex flex-1 flex-col">
+      <Tabs defaultValue="persona" className="relative flex flex-1 flex-col">
         <TabsList className="grid w-full grid-cols-4 gap-1 lg:grid-cols-8 lg:w-[820px]">
           <TabsTrigger value="persona">Persona</TabsTrigger>
           <TabsTrigger value="voice">Voice</TabsTrigger>
@@ -122,7 +124,7 @@ export function VoiceBuilder() {
           <TabsTrigger value="phone">Phone</TabsTrigger>
           <TabsTrigger value="flow">Flow</TabsTrigger>
         </TabsList>
-        <div className="mt-4 flex-1 rounded-xl border border-border bg-card p-6 text-card-foreground">
+        <div className="glass mt-4 flex-1 p-6 text-card-foreground">
           <TabsContent value="persona" className="m-0 h-full">
             <PersonaTab config={config} onChange={updateConfig} />
           </TabsContent>
