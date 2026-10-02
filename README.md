@@ -1,436 +1,453 @@
-# Aivora - Multi-tenant AI Voice Receptionist, WhatsApp & Website Platform
+﻿<div align="center">
 
-Aivora is a multi-tenant SaaS backend for an AI voice receptionist, WhatsApp AI chatbot, and website builder platform for small businesses.
+# Aivora
+
+**AI-powered business automation for local service brands**
+
+Voice receptionist · WhatsApp automation · Website generation · Knowledge-base-backed AI orchestration
+
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![TanStack Start](https://img.shields.io/badge/TanStack_Start-FF4154?logo=reactquery&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+
+</div>
+
+---
+
+## Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [How it works](#how-it-works)
+- [Data model](#data-model)
+- [Repository structure](#repository-structure)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Environment configuration](#environment-configuration)
+- [Core business flow](#core-business-flow)
+- [Design principles](#design-principles)
+- [Documentation](#documentation)
+
+---
+
+## Overview
+
+Aivora is an AI-powered business automation platform for local service brands. It combines a customer dashboard, AI voice receptionist flows, WhatsApp automation, website generation, and a knowledge-base-backed orchestration layer that can answer questions, handle bookings, and escalate to humans when needed.
+
+The repository has three parts: a **frontend app**, a **Python RAG and orchestration service**, and a **local Supabase data layer**. A single startup script wires them together so the full stack runs locally with minimal setup.
+
+Aivora helps a business owner do four things quickly:
+
+| Step | What the owner does |
+| --- | --- |
+| 1 | Create an organization and onboarding profile |
+| 2 | Configure a voice receptionist for phone calls |
+| 3 | Connect WhatsApp and website experiences |
+| 4 | Power the AI with business context stored in a structured knowledge base |
+
+The platform is meant to feel like an operating system for AI-first customer service, while staying grounded in a simple SaaS flow: **configure business data, connect channels, preview, go live.**
+
+---
 
 ## Architecture
 
-```
-┌─────────────────┐     ┌──────────────────────┐
-│   apps/api      │◄───►│  apps/ai-orchestrator│
-│   (NestJS)      │     │  (FastAPI + Python)  │
-│   - Postgres    │     │  - LLM Conversation  │
-│   - Redis       │     │  - Tool Calling      │
-│   - Auth/RBAC   │     │  - RAG Integration   │
-│   - Booking     │     │                      │
-└─────────────────┘     └──────────────────────┘
-         ▲
-         │
-    ┌────┴────┐
-    │  PostgreSQL + pgvector │
-    │  (Multi-tenant with RLS)│
-    └────────────────────────┘
-```
+```mermaid
+flowchart TB
+  Owner["Business owner<br/>Dashboard and onboarding"]
+  Customer["Customers<br/>Phone, WhatsApp, Website"]
 
-### Services
+  subgraph FE["Frontend: React, TanStack Start, Vite, Tailwind"]
+    UI["Auth and org setup<br/>Service config<br/>Knowledge-base UI<br/>Voice, WhatsApp, Website pages"]
+    WH["Public webhook routes<br/>/api/public/vapi-webhook<br/>/api/public/whatsapp-webhook"]
+  end
 
-| Service | Technology | Port | Description |
-|---------|------------|------|-------------|
-| API | NestJS + TypeScript | 3001 | REST API, Auth, Multi-tenancy, Booking, Voice/WhatsApp/Website Config |
-| AI Orchestrator | FastAPI + Python | 8000 | LLM conversation loop, tool calling, RAG |
-| PostgreSQL | pgvector/pg16 | 5432 | Primary database with vector embeddings |
-| Redis | Redis 7 | 6379 | Caching, BullMQ job queues |
+  subgraph Providers["External channel providers"]
+    Vapi["Vapi voice layer<br/>Phone numbers, IVR, calls<br/>Call webhooks, tool callbacks"]
+    WA["WhatsApp / Meta<br/>Inbound messages, bot replies<br/>Human handoff"]
+  end
 
-## Quick Start
+  subgraph SB["Supabase"]
+    Auth["Auth"]
+    PG["Postgres<br/>RLS and org-scoped data"]
+    Storage["Storage"]
+  end
 
-### Prerequisites
+  subgraph RAG["aivora-rag-service: FastAPI, Python"]
+    Orch["Org config loading<br/>Vector KB retrieval<br/>Prompt assembly<br/>Model routing<br/>Tool execution<br/>Conversation logging"]
+  end
 
-- Node.js 20 LTS
-- Python 3.11+
-- pnpm 9+
-- Docker & Docker Compose
-- uv (Python package manager)
+  LLM["OpenAI / Anthropic / Gemini<br/>LLM responses and embeddings"]
 
-### 1. Clone and Install
-
-```bash
-git clone <repository>
-cd aivora
-
-# Install Node.js dependencies
-pnpm install
-
-# Install Python dependencies
-cd apps/ai-orchestrator && uv sync && cd ../..
+  Owner --> UI
+  Customer --> Vapi
+  Customer --> WA
+  UI --> SB
+  Vapi --> WH
+  WA --> WH
+  WH -->|"persist events"| PG
+  WH -->|"message + org_id + service_id"| Orch
+  Orch -->|"config, KB vectors, logs"| PG
+  Orch --> LLM
 ```
 
-### 2. Configure Environment
+| Component | Responsibility |
+| --- | --- |
+| **Frontend** | Dashboard, onboarding, service configuration, knowledge-base UI, preview flows, and the public webhook endpoints |
+| **Supabase** | Multi-tenant auth, Postgres data with RLS, file storage, and vector metadata |
+| **Vapi** | Telephony: phone numbers, IVR and calls, call webhooks, tool callbacks |
+| **WhatsApp / Meta** | Inbound messages, bot replies, human handoff |
+| **aivora-rag-service** | Retrieval, prompt construction, model routing, tool calls, conversation logging |
+| **LLM providers** | Language model responses and embeddings |
 
-```bash
-cp .env.example .env
-# Edit .env with your API keys (at minimum OPENAI_API_KEY for embeddings)
+---
+
+## How it works
+
+### 1. Organization onboarding
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Owner as Business owner
+  participant App as Frontend dashboard
+  participant DB as Supabase
+
+  Owner->>App: Sign up
+  App->>DB: Create organizations row
+  App->>DB: Create matching org_members row
+  Owner->>App: Enter business details
+  App->>DB: Create business_profiles row<br/>name, timezone, languages, hours, vertical
+  App-->>Owner: Redirect to service setup flow
 ```
 
-### 3. Start Infrastructure
+### 2. Service setup
 
-```bash
-# Start PostgreSQL and Redis
-docker-compose -f infra/docker-compose.yml up -d postgres redis
+The dashboard manages several service channels for the same organization. Each channel is tied to a `services` row and channel-specific configuration in Supabase.
 
-# Or start everything including apps
-docker-compose -f infra/docker-compose.yml up -d
+```mermaid
+flowchart LR
+  Org["Organization"] --> Voice["Voice receptionist"]
+  Org --> WhatsApp["WhatsApp business assistant"]
+  Org --> Website["Website presence"]
+  Voice --> S1[("services row +<br/>channel config")]
+  WhatsApp --> S2[("services row +<br/>channel config")]
+  Website --> S3[("services row +<br/>channel config")]
 ```
 
-### 4. Run Migrations & Seed
+### 3. Knowledge-base retrieval
 
-```bash
-# Run database migrations
-cd apps/api && pnpm db:migrate
+The AI layer is not isolated from the business context. It reads organization-scoped configuration and queries knowledge-base entries before it responds.
 
-# Seed demo data
-pnpm db:seed
+```mermaid
+sequenceDiagram
+  autonumber
+  actor C as Customer
+  participant CH as Phone or WhatsApp
+  participant FE as Frontend webhook
+  participant RAG as aivora-rag-service
+  participant DB as Supabase
+  participant LLM as LLM provider
+
+  C->>CH: Asks a question
+  CH->>FE: Provider event
+  FE->>RAG: Message with org_id and service_id
+  RAG->>DB: Load org, business and service config
+  RAG->>LLM: Embed the customer message
+  RAG->>DB: Vector similarity search over org knowledge base
+  DB-->>RAG: Top matching chunks
+  RAG->>LLM: Prompt with chunks, business context, rules, tool definitions
+  alt Answer directly
+    LLM-->>RAG: Grounded answer
+  else Tool call needed
+    LLM-->>RAG: Tool request
+    RAG->>RAG: Execute tool
+  else Escalate
+    LLM-->>RAG: Hand off to human
+  end
+  RAG->>DB: Log conversation and outcome
+  RAG-->>FE: Reply or action
+  FE-->>CH: Respond to customer
 ```
 
-### 5. Start Development Servers
+### 4. Tool execution and escalation
 
-```bash
-# Terminal 1: Start API
-cd apps/api && pnpm start:dev
+For every message the orchestration service decides what to do next:
 
-# Terminal 2: Start AI Orchestrator
-cd apps/ai-orchestrator && uv run uvicorn app.main:app --reload --port 8000
+```mermaid
+flowchart TD
+  Msg["Incoming message or call turn"] --> Decide{"What does the customer need?"}
+  Decide -->|"Information"| KB["Answer from business knowledge base"]
+  Decide -->|"Open slots"| Avail["Check availability"]
+  Decide -->|"Wants to schedule"| Book["Book an appointment"]
+  Decide -->|"Nobody can help right now"| Msg2["Take a message"]
+  Decide -->|"Human needed or escalation threshold hit"| Human["Route call or conversation to a human"]
+  KB --> Log
+  Avail --> Log
+  Book --> Log
+  Msg2 --> Log
+  Human --> Log["Record outcome and update conversation timeline"]
 ```
 
-### 6. Verify
+### 5. Webhook and event handling
 
-- API: http://localhost:3001/api
-- Swagger Docs: http://localhost:3001/docs
-- AI Orchestrator: http://localhost:8000
-- Health Check: http://localhost:3001/api/health
+The frontend exposes webhook endpoints that receive provider callbacks:
 
-## Project Structure
+- `/api/public/vapi-webhook`
+- `/api/public/whatsapp-webhook`
 
+```mermaid
+flowchart LR
+  Event["Provider callback<br/>call or chat event"] --> Verify{"Signature valid?"}
+  Verify -->|"No"| Reject["Reject request"]
+  Verify -->|"Yes"| Resolve["Resolve org and service"]
+  Resolve --> Persist["Persist call or chat event in Supabase"]
+  Persist --> Dash["Visible in dashboard timeline"]
+  Persist --> Trace["AI orchestration loop stays traceable"]
 ```
-aivora/
-├── apps/
-│   ├── api/                    # NestJS API
-│   │   ├── src/
-│   │   │   ├── auth/           # Authentication & OTP
-│   │   │   ├── tenancy/        # Multi-tenancy & RLS
-│   │   │   ├── secrets/        # Secrets vault abstraction
-│   │   │   ├── business-profile/
-│   │   │   ├── knowledge-base/ # KB with pgvector embeddings
-│   │   │   ├── appointments/   # Booking engine
-│   │   │   ├── voice/          # Voice receptionist
-│   │   │   ├── whatsapp/       # WhatsApp AI chatbot
-│   │   │   ├── website/        # Website builder
-│   │   │   ├── credentials/    # Credential management
-│   │   │   ├── audit/          # Audit logging
-│   │   │   └── health/
-│   │   └── prisma/             # Schema & migrations
-│   │
-│   └── ai-orchestrator/        # FastAPI AI service
-│       └── app/
-│           ├── config.py
-│           ├── models.py
-│           ├── api_client.py   # Calls apps/api REST endpoints
-│           ├── orchestrator.py # LLM conversation loop
-│           └── main.py
+
+---
+
+## Data model
+
+A simplified view of the core entities described above. See [`Project-Documents/05_Backend_Schema.md`](Project-Documents/05_Backend_Schema.md) for the full schema.
+
+```mermaid
+erDiagram
+  ORGANIZATIONS ||--o{ ORG_MEMBERS : "has members"
+  ORGANIZATIONS ||--|| BUSINESS_PROFILES : "described by"
+  ORGANIZATIONS ||--o{ SERVICES : "owns"
+
+  ORGANIZATIONS {
+    uuid id PK
+  }
+  ORG_MEMBERS {
+    uuid org_id FK
+    uuid user_id
+  }
+  BUSINESS_PROFILES {
+    uuid org_id FK
+    string business_name
+    string timezone
+    string language_preferences
+    string business_hours
+    string vertical
+  }
+  SERVICES {
+    uuid id PK
+    uuid org_id FK
+    string channel
+  }
+```
+
+---
+
+## Repository structure
+
+```text
+Aivora/
+├── Frontend/                      React app: dashboard, onboarding, webhooks
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── integrations/
+│   │   ├── lib/
+│   │   ├── routes/
+│   │   ├── router.tsx
+│   │   └── server.ts
+│   ├── public/
+│   ├── supabase/
+│   ├── .env.local.example
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── README.md
 │
-├── packages/
-│   └── shared-types/           # TypeScript types shared with frontend
+├── aivora-rag-service/            FastAPI RAG and orchestration service
+│   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── services/
+│   │   ├── tools/
+│   │   └── main.py
+│   ├── migrations/
+│   ├── tests/
+│   ├── .env.example
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── README.md
 │
-├── infra/
-│   ├── docker-compose.yml
-│   ├── Dockerfile.api
-│   └── Dockerfile.ai-orchestrator
+├── supabase/                      Local config and DB metadata
 │
-├── turbo.json                  # Turborepo config
-├── package.json                # Root package.json (pnpm workspaces)
-└── Makefile                    # Common commands
+├── Project-Documents/             Product and technical documentation
+│   ├── 01_PRD.md
+│   ├── 02_TRD.md
+│   ├── 03_App_Flow.md
+│   ├── 04_UI_UX_Brief.md
+│   ├── 05_Backend_Schema.md
+│   └── 06_Implementation_Plan.md
+│
+├── Start-Aivora.ps1               One-command local launcher
+├── README.md
+├── LOCAL_RUN.md
+├── package.json
+└── package-lock.json
 ```
 
-## Key Features
+---
 
-### Multi-tenancy with Row-Level Security
-- Every tenant-scoped table has `org_id`
-- RLS policies enforce isolation at database level
-- `TenantContextService` sets `app.current_org_id` per request
-- Automated test verifies cross-org isolation
+## Tech stack
 
-### Authentication
-- Email + OTP signup/login
-- Google & Microsoft OAuth (structured, mockable)
-- JWT access tokens (15min) + refresh tokens (7d) as httpOnly cookies
-- RBAC: owner, admin, agent, viewer roles enforced at controller level
+| Layer | Stack | Purpose |
+| --- | --- | --- |
+| Frontend | React, TanStack Start, Vite, Tailwind | Dashboard, onboarding, preview flows, app shell |
+| Data and auth | Supabase Postgres, Auth, Storage | Multi-tenant app data, org management, auth, file upload |
+| Voice | Vapi | Telephony orchestration, call WebSockets, assistant events |
+| AI / RAG | FastAPI, Python | Knowledge-base search, prompt construction, model routing, tool calls |
+| Model providers | OpenAI, Anthropic, Gemini | LLM responses and embeddings |
+| Integrations | Meta WhatsApp, Twilio, Calendly | Channel integration and business tooling |
 
-### Secrets Vault
-- `SecretsProvider` interface with `LocalAesGcmSecretsProvider` (dev) and `AwsKmsSecretsProvider` (prod stub)
-- AES-256-GCM encryption, keys from `SECRETS_MASTER_KEY`
-- Raw secrets never appear in API responses or logs
+---
 
-### Knowledge Base with RAG
-- PDF upload → text extraction → LLM structuring → candidate entries for review
-- Embeddings generated on create/update (OpenAI/Anthropic configurable)
-- pgvector cosine similarity search via `POST /knowledge-base/search`
+## Getting started
 
-### Appointment Booking Engine
-- Services with duration, buffers, pricing
-- Staff with working hours, service assignments
-- Availability calculation respecting hours, buffers, existing bookings
-- **Concurrency-safe**: Exclusion constraint prevents double-booking, race condition handled with re-check in transaction
-- BullMQ reminder jobs (24h, 1h before)
+**Prerequisites:** Docker (for local Supabase), Node.js with npm, Python 3 with pip, and PowerShell for the launcher script.
 
-### Voice Receptionist
-- Voice agent config: persona, greeting, voice, escalation, consent
-- Twilio phone number search/purchase (with nearby area code fallback)
-- Webhook pipeline: Twilio → Deepgram STT → AI Orchestrator → ElevenLabs TTS → Twilio
-- Mandatory AI disclosure + consent greeting
-- Hardened system prompt against injection
-- Tool calling: check_availability, book_appointment, transfer_to_human, take_message
-- Sandbox/preview mode (is_sandbox flag, no billing impact)
-- Go Live check: preview opened + all credentials connected
+### Quick start
 
-### WhatsApp AI Chatbot (Stage 2)
-- **Meta Embedded Signup** — OAuth flow for connecting WhatsApp Business Accounts; fallback manual entry
-- **Credential Vault** — System User tokens stored encrypted via Stage 1's SecretsProvider
-- **Inbound Webhook** — Signature verification, instant ack, BullMQ async processing
-- **24-Hour Window Policy** — Free-form replies only within 24h of last customer message; templates required outside
-- **AI Conversation Loop** — Reuses Stage 1 orchestrator with WhatsApp channel (buttons/lists/quick replies)
-- **Template Management** — Compose, submit to Meta, poll status (pending/approved/rejected)
-- **Human Handoff** — Keyword detection + AI-detected frustration → escalate, agent take-over/release
-- **Preview/Sandbox** — Identical AI path, `is_sandbox=true`, zero external sends, zero usage records
-- **Go-Live Gate** — Preview opened + meta_whatsapp credential connected + webhook configured
-- **Opt-In Enforcement** — Proactive templates only for opted-in customers
+The easiest way to bring up the full stack is the PowerShell launcher at the repo root:
 
-### Website Builder (Stage 3)
-- **Template-based Visual Editor** — 5 starter templates (Salon, Clinic, Restaurant, Generic, Blank) with structured page trees
-- **AI Content Pre-fill** — `POST /website/versions/prefill` generates structured page trees from Business Profile + Knowledge Base using LLM
-- **Editor Backend** — Autosave draft versions, version history, server-side page-tree schema validation (component types, required props)
-- **Embeddable Widgets** — Booking widget (`<aivora-booking>`) and Chat widget (`<aivora-chat>`) as vanilla JS web components; public API scoped by service key
-- **Public API** — `GET /public/:key/availability`, `POST /public/:key/appointments`, `POST /public/:key/chat` with per-IP and per-key rate limiting
-- **Staging & Publishing** — Static site build from page tree → S3-compatible storage → CDN cache invalidation; atomic publish (old version servable until new confirmed live)
-- **Custom Domain** — Guided DNS flow with CNAME/A record instructions; `POST /domain/verify` transitions `not_connected → pending_dns → verified` via real DNS lookup
-- **SEO Basics** — Meta title/description per page, auto-generated `sitemap.xml` and `robots.txt` at publish
-- **Go-Live Gate** — Preview opened + custom domain verified (subdomain-only sites skip domain check)
-
-### Audit Logging
-- Interceptor-based logging for credential changes, service status changes
-- Actor, action, resource, before/after state
-
-## API Endpoints
-
-### Authentication
-```
-POST   /api/v1/auth/signup
-POST   /api/v1/auth/send-otp
-POST   /api/v1/auth/verify-otp
-POST   /api/v1/auth/login
-POST   /api/v1/auth/refresh
-POST   /api/v1/auth/logout
-GET    /api/v1/auth/me
-POST   /api/v1/auth/invite
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Start-Aivora.ps1
 ```
 
-### Business Profile
-```
-POST   /api/v1/business-profile
-GET    /api/v1/business-profile
-PUT    /api/v1/business-profile
-DELETE /api/v1/business-profile
-```
-
-### Knowledge Base
-```
-POST   /api/v1/knowledge-base
-POST   /api/v1/knowledge-base/bulk
-GET    /api/v1/knowledge-base
-GET    /api/v1/knowledge-base/:id
-PUT    /api/v1/knowledge-base/:id
-DELETE /api/v1/knowledge-base/:id
-POST   /api/v1/knowledge-base/search
-POST   /api/v1/knowledge-base/extract
+```mermaid
+flowchart LR
+  A["Check Docker<br/>is running"] --> B["Check frontend and<br/>RAG service folders"]
+  B --> C["Validate required<br/>env files"]
+  C --> D["Install frontend<br/>deps if needed"]
+  D --> E["Start local<br/>Supabase"]
+  E --> F["Run RAG service<br/>port 8001"]
+  F --> G["Start frontend<br/>port 8081"]
+  G --> H["Open app in<br/>browser"]
 ```
 
-### Credentials
-```
-POST   /api/v1/credentials
-GET    /api/v1/credentials
-GET    /api/v1/credentials/:id
-PUT    /api/v1/credentials/:id
-DELETE /api/v1/credentials/:id
-POST   /api/v1/credentials/:id/test
-```
+| Service | Port |
+| --- | --- |
+| RAG service | `8001` |
+| Frontend dev server | `8081` |
 
-### Appointments
-```
-POST   /api/v1/appointments/services
-GET    /api/v1/appointments/services
-GET    /api/v1/appointments/services/:id
-PUT    /api/v1/appointments/services/:id
-DELETE /api/v1/appointments/services/:id
+### Manual startup
 
-POST   /api/v1/appointments/staff
-GET    /api/v1/appointments/staff
-GET    /api/v1/appointments/staff/:id
-PUT    /api/v1/appointments/staff/:id
-DELETE /api/v1/appointments/staff/:id
+<details>
+<summary>Run each part yourself</summary>
 
-GET    /api/v1/appointments/availability
-POST   /api/v1/appointments
-GET    /api/v1/appointments
-GET    /api/v1/appointments/:id
-PUT    /api/v1/appointments/:id
-DELETE /api/v1/appointments/:id
-POST   /api/v1/appointments/:id/no-show
-```
-
-### Voice
-```
-POST   /api/v1/voice/services/:serviceId/config
-GET    /api/v1/voice/services/:serviceId/config
-PUT    /api/v1/voice/services/:serviceId/config
-DELETE /api/v1/voice/services/:serviceId/config
-
-GET    /api/v1/voice/phone-numbers/search
-POST   /api/v1/voice/phone-numbers/purchase
-GET    /api/v1/voice/phone-numbers
-DELETE /api/v1/voice/phone-numbers/:id
-
-GET    /api/v1/voice/services/:serviceId/go-live-check
-POST   /api/v1/voice/services/:serviceId/sandbox-call
-
-POST   /api/v1/voice/webhook/incoming
-POST   /api/v1/voice/webhook/status
-POST   /api/v1/voice/webhook/recording
-POST   /api/v1/voice/webhook/process-speech
-```
-
-### WhatsApp
-```
-# Bot Config
-POST   /api/v1/whatsapp/services/:serviceId/config
-GET    /api/v1/whatsapp/services/:serviceId/config
-PUT    /api/v1/whatsapp/services/:serviceId/config
-DELETE /api/v1/whatsapp/services/:serviceId/config
-
-# Meta Embedded Signup
-POST   /api/v1/whatsapp/embedded-signup
-POST   /api/v1/whatsapp/callback
-POST   /api/v1/whatsapp/connect-manual
-
-# Templates
-POST   /api/v1/whatsapp/services/:serviceId/templates
-GET    /api/v1/whatsapp/services/:serviceId/templates
-GET    /api/v1/whatsapp/services/:serviceId/templates/:id
-PUT    /api/v1/whatsapp/services/:serviceId/templates/:id/sync
-DELETE /api/v1/whatsapp/services/:serviceId/templates/:id
-POST   /api/v1/whatsapp/services/:serviceId/templates/send
-
-# Handoff
-GET    /api/v1/whatsapp/conversations/escalated
-POST   /api/v1/whatsapp/conversations/:id/take-over
-POST   /api/v1/whatsapp/conversations/:id/release
-
-# Window Policy
-GET    /api/v1/whatsapp/window-check/:customerPhone
-
-# Preview/Sandbox
-POST   /api/v1/whatsapp/services/:serviceId/preview
-GET    /api/v1/whatsapp/services/:serviceId/preview/history
-DELETE /api/v1/whatsapp/services/:serviceId/preview
-
-# Go-Live Check
-GET    /api/v1/whatsapp/services/:serviceId/go-live-check
-
-# Webhook (public)
-GET    /api/v1/whatsapp/webhook          # Meta verification
-POST   /api/v1/whatsapp/webhook          # Inbound messages
-```
-
-### Website
-```
-# Config
-POST   /api/v1/website/services/:serviceId/config
-GET    /api/v1/website/services/:serviceId/config
-PUT    /api/v1/website/services/:serviceId/config
-DELETE /api/v1/website/services/:serviceId/config
-
-# Versions (drafts + history)
-POST   /api/v1/website/services/:serviceId/versions
-GET    /api/v1/website/services/:serviceId/versions
-GET    /api/v1/website/services/:serviceId/versions/:id
-PUT    /api/v1/website/services/:serviceId/versions/:id
-DELETE /api/v1/website/services/:serviceId/versions/:id
-
-# AI Pre-fill
-POST   /api/v1/website/services/:serviceId/versions/prefill
-
-# Publishing
-POST   /api/v1/website/services/:serviceId/publish
-GET    /api/v1/website/services/:serviceId/published
-
-# Custom Domain
-GET    /api/v1/website/services/:serviceId/domain/instructions
-POST   /api/v1/website/services/:serviceId/domain/verify
-
-# Go-Live Check
-GET    /api/v1/website/services/:serviceId/go-live-check
-
-# Public Widgets (no auth, service-key scoped)
-GET    /api/v1/public/:serviceKey/availability
-POST   /api/v1/public/:serviceKey/appointments
-POST   /api/v1/public/:serviceKey/chat
-```
-
-### Audit Logs
-```
-GET    /api/v1/audit-logs
-GET    /api/v1/audit-logs/:id
-```
-
-## Testing
+**Frontend**
 
 ```bash
-# API tests
-cd apps/api && pnpm test
-
-# AI Orchestrator tests
-cd apps/ai-orchestrator && uv run pytest
-
-# Integration tests (requires Docker)
-cd apps/api && pnpm test:e2e
+cd Frontend
+npm install
+npm run dev
 ```
 
-## Environment Variables
+**RAG service**
 
-See `.env.example` for all configuration options. Key variables:
+```bash
+cd aivora-rag-service
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+```
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `REDIS_URL` | Redis connection string | Yes |
-| `JWT_ACCESS_SECRET` | JWT access token secret (32+ chars) | Yes |
-| `JWT_REFRESH_SECRET` | JWT refresh token secret (32+ chars) | Yes |
-| `SECRETS_MASTER_KEY` | AES-256-GCM master key (64 hex chars) | Yes |
-| `LLM_API_KEY` | LLM API key (AgentRouter, OpenAI, etc.) | Yes |
-| `LLM_BASE_URL` | LLM base URL for custom providers | For custom LLM |
-| `LLM_MODEL` | LLM model name (e.g., opus-5) | For custom LLM |
-| `EMBEDDING_API_KEY` | Embeddings API key | Yes |
-| `EMBEDDING_BASE_URL` | Embeddings base URL for custom providers | For custom embeddings |
-| `EMBEDDING_MODEL` | Embeddings model name | For custom embeddings |
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID | For voice |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | For voice |
-| `META_APP_ID` | Meta App ID for WhatsApp | For WhatsApp |
-| `META_APP_SECRET` | Meta App Secret for WhatsApp | For WhatsApp |
-| `META_WEBHOOK_VERIFY_TOKEN` | Webhook verify token | For WhatsApp |
-| `DEEPGRAM_API_KEY` | Deepgram API key for STT | For voice |
-| `ELEVENLABS_API_KEY` | ElevenLabs API key for TTS | For voice |
-| `AIVORA_API_KEY` | Internal API key for orchestrator→API | Yes |
-| `WIDGET_RATE_LIMITS` | JSON: requestsPerMinute, requestsPerHour | For widgets |
-| `STAGING_DOMAIN` | Staging domain for preview (e.g., bizpilot.site) | For website |
-| `AWS_S3_BUCKET` | S3 bucket for static site hosting | For website publish |
+**Local Supabase**
 
-## Production Deployment
+```bash
+cd Frontend
+npx supabase start
+```
 
-1. Set `NODE_ENV=production`
-2. Use `SECRETS_PROVIDER=aws_kms` with valid AWS KMS credentials
-3. Configure real OAuth credentials
-4. Set up SSL/TLS termination (nginx, ALB, etc.)
-5. Use managed PostgreSQL (RDS, Cloud SQL) with pgvector
-6. Use managed Redis (ElastiCache, Redis Cloud)
-7. Configure S3-compatible storage for recordings
-8. Set up monitoring (Prometheus, Grafana, Datadog)
+</details>
 
-## License
+---
 
-MIT
+## Environment configuration
+
+> [!WARNING]
+> Never commit `.env` files or the Supabase service role key. Only the `.example` files belong in git.
+
+### Frontend
+
+Copy `Frontend/.env.local.example` to `Frontend/.env.local` and fill in the required keys.
+
+| Variable | Purpose |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key for the browser client |
+| `VAPI_API_KEY` | Vapi API key |
+| `ORCHESTRATION_SHARED_SECRET` | Shared secret used between the frontend and the RAG service |
+| `RAG_SERVICE_URL` | Where the frontend reaches the RAG service |
+| Provider keys | Meta / WhatsApp, Twilio, Calendly and OAuth credentials |
+
+### RAG service
+
+Copy `aivora-rag-service/.env.example` to `aivora-rag-service/.env` and configure:
+
+| Variable | Purpose |
+| --- | --- |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side Supabase key (keep secret) |
+| `OPENAI_API_KEY` | OpenAI provider key |
+| `ANTHROPIC_API_KEY` | Anthropic provider key |
+| `GEMINI_API_KEY` | Gemini provider key |
+| `ORCHESTRATION_SHARED_SECRET` | Must match the frontend value |
+| `APP_PORT` | Port the service listens on |
+| `KB_TOP_K` | How many knowledge-base chunks to retrieve per query |
+| `KB_SCORE_THRESHOLD` | Minimum similarity score for a chunk to be used |
+
+---
+
+## Core business flow
+
+```mermaid
+flowchart TD
+  A["1. Sign up and create<br/>business profile"] --> B["2. Configure service channels<br/>and org settings"]
+  B --> C["3. Add business information<br/>and knowledge-base content"]
+  C --> D["4. Connect voice, WhatsApp<br/>or website channels"]
+  D --> E["5. Test in preview mode"]
+  E --> F{"Credentials and<br/>preview checks pass?"}
+  F -->|"No"| B
+  F -->|"Yes"| G["6. Go live"]
+  G --> H["7. Monitor conversations, logs,<br/>usage and escalations"]
+```
+
+---
+
+## Design principles
+
+| Principle | What it means |
+| --- | --- |
+| **Multi-tenant by design** | Org-scoped records and service objects keep each business isolated |
+| **Knowledge-driven AI** | Business data and knowledge-base entries guide responses instead of a generic bot |
+| **Provider abstraction** | New channels plug in without reworking the core conversation loop |
+| **Event-first traceability** | Every call and chat interaction is stored so it can be analyzed and resolved |
+| **Preview before publish** | Test the assistant before activating it live |
+
+---
+
+## Documentation
+
+| Document | Covers |
+| --- | --- |
+| [`Project-Documents/01_PRD.md`](Project-Documents/01_PRD.md) | Product requirements |
+| [`Project-Documents/02_TRD.md`](Project-Documents/02_TRD.md) | Technical requirements |
+| [`Project-Documents/03_App_Flow.md`](Project-Documents/03_App_Flow.md) | Application flow |
+| [`Project-Documents/04_UI_UX_Brief.md`](Project-Documents/04_UI_UX_Brief.md) | UI and UX brief |
+| [`Project-Documents/05_Backend_Schema.md`](Project-Documents/05_Backend_Schema.md) | Backend schema |
+| [`Project-Documents/06_Implementation_Plan.md`](Project-Documents/06_Implementation_Plan.md) | Implementation plan |
+| [`LOCAL_RUN.md`](LOCAL_RUN.md) | Running the project locally |
+
+---
+
+> **Status:** this repository is still evolving. The architecture is intentionally layered so the product can scale from a local launch to a production SaaS platform without a complete rewrite of the AI orchestration layer.
