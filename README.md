@@ -77,8 +77,9 @@ flowchart TB
     Storage["Storage"]
   end
 
-  subgraph RAG["aivora-rag-service: FastAPI, Python"]
+  subgraph RAG["aivora-rag-service: FastAPI, Python + LangGraph"]
     Orch["Org config loading<br/>Vector KB retrieval<br/>Prompt assembly<br/>Model routing<br/>Tool execution<br/>Conversation logging"]
+    LG["LangGraph Orchestration<br/>Intent classification<br/>State machine routing<br/>Sentiment analysis<br/>Entity extraction<br/>Auto-escalation logic"]
   end
 
   LLM["OpenAI / Anthropic / Gemini<br/>LLM responses and embeddings"]
@@ -102,6 +103,7 @@ flowchart TB
 | **Vapi** | Telephony: phone numbers, IVR and calls, call webhooks, tool callbacks |
 | **WhatsApp / Meta** | Inbound messages, bot replies, human handoff |
 | **aivora-rag-service** | Retrieval, prompt construction, model routing, tool calls, conversation logging |
+| **LangGraph Orchestration** | Multi-agent state machine, intent classification, sentiment analysis, entity extraction, smart routing |
 | **LLM providers** | Language model responses and embeddings |
 
 ---
@@ -139,9 +141,9 @@ flowchart LR
   Website --> S3[("services row +<br/>channel config")]
 ```
 
-### 3. Knowledge-base retrieval
+### 3. Knowledge-base retrieval and multi-agent orchestration
 
-The AI layer is not isolated from the business context. It reads organization-scoped configuration and queries knowledge-base entries before it responds.
+The AI layer uses LangGraph for intelligent decision-making. It reads organization-scoped configuration, classifies intent, performs sentiment analysis, and queries knowledge-base entries before it responds.
 
 ```mermaid
 sequenceDiagram
@@ -150,6 +152,7 @@ sequenceDiagram
   participant CH as Phone or WhatsApp
   participant FE as Frontend webhook
   participant RAG as aivora-rag-service
+  participant LG as LangGraph Orchestrator
   participant DB as Supabase
   participant LLM as LLM provider
 
@@ -160,38 +163,71 @@ sequenceDiagram
   RAG->>LLM: Embed the customer message
   RAG->>DB: Vector similarity search over org knowledge base
   DB-->>RAG: Top matching chunks
-  RAG->>LLM: Prompt with chunks, business context, rules, tool definitions
-  alt Answer directly
-    LLM-->>RAG: Grounded answer
-  else Tool call needed
-    LLM-->>RAG: Tool request
-    RAG->>RAG: Execute tool
+  RAG->>LG: Message + KB chunks + config
+  LG->>LG: Classify intent (booking/info/complaint/escalate)
+  LG->>LG: Analyze sentiment (POSITIVE/NEGATIVE/NEUTRAL)
+  LG->>LG: Extract entities (dates, times, services)
+  LG->>LG: Route to handler (state machine)
+  alt KB Answer
+    LG->>LLM: Prompt with KB context
+    LLM-->>LG: Grounded answer
+  else Booking
+    LG->>LG: Check availability
+    LG->>LG: Execute booking tool
   else Escalate
-    LLM-->>RAG: Hand off to human
+    LG->>LG: Detect urgency or sentiment
+    LLM-->>LG: Escalation flag
   end
-  RAG->>DB: Log conversation and outcome
+  LG-->>RAG: Response + metadata
+  RAG->>DB: Log orchestration decision
   RAG-->>FE: Reply or action
   FE-->>CH: Respond to customer
 ```
 
-### 4. Tool execution and escalation
+### 4. Multi-agent orchestration with LangGraph state machine
 
-For every message the orchestration service decides what to do next:
+The LangGraph orchestration layer decides what action to take based on intent classification and sentiment analysis:
 
 ```mermaid
 flowchart TD
-  Msg["Incoming message or call turn"] --> Decide{"What does the customer need?"}
-  Decide -->|"Information"| KB["Answer from business knowledge base"]
-  Decide -->|"Open slots"| Avail["Check availability"]
-  Decide -->|"Wants to schedule"| Book["Book an appointment"]
-  Decide -->|"Nobody can help right now"| Msg2["Take a message"]
-  Decide -->|"Human needed or escalation threshold hit"| Human["Route call or conversation to a human"]
-  KB --> Log
-  Avail --> Log
-  Book --> Log
-  Msg2 --> Log
-  Human --> Log["Record outcome and update conversation timeline"]
+  Msg["Incoming message or call turn"] --> Classify["Classify Intent<br/>(zero-shot)"]
+  Classify -->|Intent + Sentiment| Sentiment["Analyze Sentiment<br/>(POSITIVE/NEGATIVE/NEUTRAL)"]
+  Sentiment -->|Entities Extracted| Route{"Route to Handler<br/>(State Machine)"}
+  
+  Route -->|"KB Answer"| KB["Search Knowledge Base<br/>& Generate Response"]
+  Route -->|"Booking"| Avail["Check Availability<br/>(Calendly)"]
+  Route -->|"Complaint"| Detect{"Negative +<br/>Urgency?"}
+  Route -->|"Default"| Generate["Generate Response"]
+  
+  Avail -->|"Slots Available"| Book["Book Appointment<br/>(Execute Tool)"]
+  Book -->|"Success"| Confirm["Send Confirmation"]
+  Book -->|"Failure"| Fallback["Take Message<br/>(Fallback)"]
+  
+  Detect -->|"Yes"| Escalate["Escalate to Human<br/>(Transfer Call)"]
+  Detect -->|"No"| Generate
+  
+  KB --> Log["Log Decision<br/>(Decision Trail)"]
+  Confirm --> Log
+  Fallback --> Log
+  Escalate --> Log
+  Generate --> Log
+  
+  Log --> Response["Return Response<br/>+ Metadata"]
 ```
+
+**Graph Nodes:**
+- `classify_intent` - Zero-shot classification (8 intent types)
+- `search_kb` - Vector search over knowledge base
+- `check_availability` - Calendly API call
+- `execute_tools` - Booking/messaging tools
+- `generate_response` - LLM response generation
+- `escalate` - Human handoff with context
+
+**Routing Logic:**
+- KB Answer → search_kb → generate_response → END
+- Booking → check_availability → execute_tools → escalate/success
+- Complaint + negative sentiment → escalate → END
+- Default → generate_response → END
 
 ### 5. Webhook and event handling
 
@@ -306,8 +342,10 @@ Aivora/
 | Frontend | React, TanStack Start, Vite, Tailwind | Dashboard, onboarding, preview flows, app shell |
 | Data and auth | Supabase Postgres, Auth, Storage | Multi-tenant app data, org management, auth, file upload |
 | Voice | Vapi | Telephony orchestration, call WebSockets, assistant events |
-| AI / RAG | FastAPI, Python | Knowledge-base search, prompt construction, model routing, tool calls |
+| AI / Orchestration | LangGraph, LangChain, FastAPI, Python | Multi-agent state machine, intent classification, sentiment analysis, entity extraction |
+| Knowledge Base | FastAPI, Python, pgvector | Knowledge-base search, RAG, prompt construction, model routing |
 | Model providers | OpenAI, Anthropic, Gemini | LLM responses and embeddings |
+| NLP Models | HuggingFace Transformers | Zero-shot classification, sentiment analysis, entity recognition |
 | Integrations | Meta WhatsApp, Twilio, Calendly | Channel integration and business tooling |
 
 ---
@@ -436,6 +474,53 @@ flowchart TD
 
 ---
 
+## AI Orchestration with LangGraph
+
+Aivora uses **LangGraph** for intelligent multi-agent decision-making. Instead of a simple prompt-response loop, each customer message flows through a state machine that classifies intent, analyzes sentiment, extracts entities, and routes to the appropriate handler.
+
+### Key Features
+
+| Feature | Capability | Benefit |
+| --- | --- | --- |
+| **Intent Classification** | Detects 8 intent types (booking, info, complaint, escalate, etc.) | Routes customers to the right handler |
+| **Sentiment Analysis** | POSITIVE/NEGATIVE/NEUTRAL tracking across conversation | Auto-escalates frustrated customers |
+| **Entity Extraction** | Emails, phone numbers, dates, times, services | Auto-fills booking parameters |
+| **State Machine Routing** | Explicit decisions at each step | Traceable, debuggable, scalable |
+| **Automatic Escalation** | Detects urgency + negative sentiment | Prevents customer frustration loops |
+| **Tool Execution** | Graceful fallbacks when operations fail | Booking fails → take message |
+
+### Architecture
+
+```mermaid
+flowchart LR
+  Input["Customer Message"] --> IC["Intent Classifier<br/>(Zero-shot)"]
+  IC --> SA["Sentiment Analysis"]
+  SA --> EE["Entity Extraction"]
+  EE --> SM["State Machine<br/>(LangGraph)"]
+  
+  SM --> N1["Search KB"]
+  SM --> N2["Check Availability"]
+  SM --> N3["Execute Tool"]
+  SM --> N4["Escalate"]
+  
+  N1 --> GR["Generate Response"]
+  N2 --> GR
+  N3 --> GR
+  N4 --> GR
+  
+  GR --> Output["Response + Metadata"]
+```
+
+### Documentation
+
+For detailed information on LangGraph implementation, see:
+- [`README_LANGGRAPH.md`](README_LANGGRAPH.md) - Complete guide
+- [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) - Features & benefits
+- [`aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md`](aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md) - Technical details
+- [`aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md`](aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md) - Integration guide
+
+---
+
 ## Documentation
 
 | Document | Covers |
@@ -447,6 +532,10 @@ flowchart TD
 | [`Project-Documents/05_Backend_Schema.md`](Project-Documents/05_Backend_Schema.md) | Backend schema |
 | [`Project-Documents/06_Implementation_Plan.md`](Project-Documents/06_Implementation_Plan.md) | Implementation plan |
 | [`LOCAL_RUN.md`](LOCAL_RUN.md) | Running the project locally |
+| [`README_LANGGRAPH.md`](README_LANGGRAPH.md) | LangGraph orchestration guide |
+| [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) | LangGraph features and benefits |
+| [`aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md`](aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md) | LangGraph technical implementation |
+| [`aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md`](aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md) | LangGraph integration guide |
 
 ---
 

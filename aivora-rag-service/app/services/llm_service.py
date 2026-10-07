@@ -10,6 +10,7 @@ from app.core.config import get_settings
 from app.schemas.api import VapiMessage, OrgConfig, RetrievedKBChunk
 from app.prompts.templates import build_system_prompt
 from app.tools.executor import ToolExecutor
+from app.services.intent_classifier import IntentClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class LLMService:
         self.settings = get_settings()
         self.db = db_service
         self.tool_executor = tool_executor
+        self.intent_classifier = IntentClassifier()
 
         # Initialize clients
         self.openai_client = AsyncOpenAI(api_key=self.settings.openai_api_key)
@@ -414,3 +416,48 @@ class LLMService:
             except Exception as e:
                 logger.error(f"Error executing tool: {e}")
                 yield f"\nError executing tool: {str(e)}"
+    
+    async def classify_with_llm(
+        self,
+        prompt: str,
+        org_config: OrgConfig,
+        json_mode: bool = False
+    ) -> str:
+        """
+        Simple LLM call for classification/extraction tasks
+        Used by orchestration service for intent classification, entity extraction, etc.
+        """
+        try:
+            provider = org_config.voice_agent_config.llm_provider
+            model = org_config.voice_agent_config.llm_model
+            
+            if provider == "anthropic" and self.anthropic_client:
+                response = await self.anthropic_client.messages.create(
+                    model=model,
+                    max_tokens=500,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response.content[0].text
+            else:
+                response = await self.openai_client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.3,
+                    max_tokens=500,
+                )
+                return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Error in classify_with_llm: {e}")
+            return ""
+    
+    async def get_intent_classification(self, message: str) -> Dict[str, Any]:
+        """Get intent classification using the intent classifier"""
+        return await self.intent_classifier.classify_intent(message)
+    
+    async def get_sentiment_analysis(self, messages: List[str]) -> Dict[str, Any]:
+        """Analyze sentiment trend across messages"""
+        return await self.intent_classifier.detect_sentiment_trend(messages)
+    
+    async def extract_entities(self, message: str) -> Dict[str, Any]:
+        """Extract entities from message"""
+        return await self.intent_classifier.extract_entities(message)

@@ -15,6 +15,16 @@ anthropic>=0.18.0
 # Google AI Studio (Gemini) - embeddings + knowledge-base extraction
 google-genai>=1.2.0
 
+# LangGraph - Agentic AI Orchestration
+langgraph>=0.1.0
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-anthropic>=0.1.0
+
+# NLP - Intent classification & entity extraction
+transformers>=4.30.0
+torch>=2.0.0
+
 # Document parsing
 pdfplumber>=0.11.0
 
