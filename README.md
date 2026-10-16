@@ -316,19 +316,11 @@ Aivora/
 │   ├── Dockerfile
 │   └── README.md
 │
-├── supabase/                      Local config and DB metadata
-│
+├── docs/                          Setup guides, references, and technical docs
 ├── Project-Documents/             Product and technical documentation
-│   ├── 01_PRD.md
-│   ├── 02_TRD.md
-│   ├── 03_App_Flow.md
-│   ├── 04_UI_UX_Brief.md
-│   ├── 05_Backend_Schema.md
-│   └── 06_Implementation_Plan.md
-│
 ├── Start-Aivora.ps1               One-command local launcher
+├── START_HERE.md                  Quick navigation for new contributors
 ├── README.md
-├── LOCAL_RUN.md
 ├── package.json
 └── package-lock.json
 ```
@@ -413,7 +405,7 @@ npx supabase start
 ## Environment configuration
 
 > [!WARNING]
-> Never commit `.env` files or the Supabase service role key. Only the `.example` files belong in git.
+> Never commit `.env` files or the Supabase service role key. Only the `.example` files belong in git. If a credential was committed previously, revoke or rotate it and remove it from Git history; `.gitignore` does not change existing commits.
 
 ### Frontend
 
@@ -514,10 +506,9 @@ flowchart LR
 ### Documentation
 
 For detailed information on LangGraph implementation, see:
-- [`README_LANGGRAPH.md`](README_LANGGRAPH.md) - Complete guide
+- [`docs/guides/README_LANGGRAPH.md`](docs/guides/README_LANGGRAPH.md) - Complete guide
 - [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) - Features & benefits
-- [`aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md`](aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md) - Technical details
-- [`aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md`](aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md) - Integration guide
+- [`docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md`](docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md) - Technical details
 
 ---
 
@@ -531,11 +522,11 @@ For detailed information on LangGraph implementation, see:
 | [`Project-Documents/04_UI_UX_Brief.md`](Project-Documents/04_UI_UX_Brief.md) | UI and UX brief |
 | [`Project-Documents/05_Backend_Schema.md`](Project-Documents/05_Backend_Schema.md) | Backend schema |
 | [`Project-Documents/06_Implementation_Plan.md`](Project-Documents/06_Implementation_Plan.md) | Implementation plan |
-| [`LOCAL_RUN.md`](LOCAL_RUN.md) | Running the project locally |
-| [`README_LANGGRAPH.md`](README_LANGGRAPH.md) | LangGraph orchestration guide |
+| [`docs/quickstart/GETTING_STARTED.md`](docs/quickstart/GETTING_STARTED.md) | Getting started guide |
+| [`docs/INDEX.md`](docs/INDEX.md) | Documentation index |
+| [`docs/guides/README_LANGGRAPH.md`](docs/guides/README_LANGGRAPH.md) | LangGraph orchestration guide |
 | [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) | LangGraph features and benefits |
-| [`aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md`](aivora-rag-service/LANGGRAPH_IMPLEMENTATION.md) | LangGraph technical implementation |
-| [`aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md`](aivora-rag-service/LANGGRAPH_INTEGRATION_EXAMPLE.md) | LangGraph integration guide |
+| [`docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md`](docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md) | LangGraph technical implementation |
 
 ---
 
