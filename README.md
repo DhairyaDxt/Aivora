@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # Aivora
 
@@ -31,6 +31,7 @@ Voice receptionist · WhatsApp automation · Website generation · Knowledge-bas
 - [Environment configuration](#environment-configuration)
 - [Core business flow](#core-business-flow)
 - [Design principles](#design-principles)
+- [AI Orchestration with LangGraph](#ai-orchestration-with-langgraph)
 - [Documentation](#documentation)
 
 ---
@@ -191,31 +192,32 @@ The LangGraph orchestration layer decides what action to take based on intent cl
 ```mermaid
 flowchart TD
   Msg["Incoming message or call turn"] --> Classify["Classify Intent<br/>(zero-shot)"]
-  Classify -->|Intent + Sentiment| Sentiment["Analyze Sentiment<br/>(POSITIVE/NEGATIVE/NEUTRAL)"]
-  Sentiment -->|Entities Extracted| Route{"Route to Handler<br/>(State Machine)"}
-  
-  Route -->|"KB Answer"| KB["Search Knowledge Base<br/>& Generate Response"]
+  Classify -->|"Intent + Sentiment"| Sentiment["Analyze Sentiment<br/>(POSITIVE/NEGATIVE/NEUTRAL)"]
+  Sentiment -->|"Entities Extracted"| Route{"Route to Handler<br/>(State Machine)"}
+
+  Route -->|"KB Answer"| KB["Search Knowledge Base<br/>and Generate Response"]
   Route -->|"Booking"| Avail["Check Availability<br/>(Calendly)"]
   Route -->|"Complaint"| Detect{"Negative +<br/>Urgency?"}
   Route -->|"Default"| Generate["Generate Response"]
-  
+
   Avail -->|"Slots Available"| Book["Book Appointment<br/>(Execute Tool)"]
   Book -->|"Success"| Confirm["Send Confirmation"]
   Book -->|"Failure"| Fallback["Take Message<br/>(Fallback)"]
-  
+
   Detect -->|"Yes"| Escalate["Escalate to Human<br/>(Transfer Call)"]
   Detect -->|"No"| Generate
-  
+
   KB --> Log["Log Decision<br/>(Decision Trail)"]
   Confirm --> Log
   Fallback --> Log
   Escalate --> Log
   Generate --> Log
-  
+
   Log --> Response["Return Response<br/>+ Metadata"]
 ```
 
-**Graph Nodes:**
+**Graph nodes:**
+
 - `classify_intent` - Zero-shot classification (8 intent types)
 - `search_kb` - Vector search over knowledge base
 - `check_availability` - Calendly API call
@@ -223,7 +225,8 @@ flowchart TD
 - `generate_response` - LLM response generation
 - `escalate` - Human handoff with context
 
-**Routing Logic:**
+**Routing logic:**
+
 - KB Answer → search_kb → generate_response → END
 - Booking → check_availability → execute_tools → escalate/success
 - Complaint + negative sentiment → escalate → END
@@ -442,14 +445,14 @@ Copy `aivora-rag-service/.env.example` to `aivora-rag-service/.env` and configur
 
 ```mermaid
 flowchart TD
-  A["1. Sign up and create<br/>business profile"] --> B["2. Configure service channels<br/>and org settings"]
-  B --> C["3. Add business information<br/>and knowledge-base content"]
-  C --> D["4. Connect voice, WhatsApp<br/>or website channels"]
-  D --> E["5. Test in preview mode"]
+  A["Step 1: Sign up and create<br/>business profile"] --> B["Step 2: Configure service channels<br/>and org settings"]
+  B --> C["Step 3: Add business information<br/>and knowledge-base content"]
+  C --> D["Step 4: Connect voice, WhatsApp<br/>or website channels"]
+  D --> E["Step 5: Test in preview mode"]
   E --> F{"Credentials and<br/>preview checks pass?"}
   F -->|"No"| B
-  F -->|"Yes"| G["6. Go live"]
-  G --> H["7. Monitor conversations, logs,<br/>usage and escalations"]
+  F -->|"Yes"| G["Step 6: Go live"]
+  G --> H["Step 7: Monitor conversations, logs,<br/>usage and escalations"]
 ```
 
 ---
@@ -470,7 +473,7 @@ flowchart TD
 
 Aivora uses **LangGraph** for intelligent multi-agent decision-making. Instead of a simple prompt-response loop, each customer message flows through a state machine that classifies intent, analyzes sentiment, extracts entities, and routes to the appropriate handler.
 
-### Key Features
+### Key features
 
 | Feature | Capability | Benefit |
 | --- | --- | --- |
@@ -481,7 +484,7 @@ Aivora uses **LangGraph** for intelligent multi-agent decision-making. Instead o
 | **Automatic Escalation** | Detects urgency + negative sentiment | Prevents customer frustration loops |
 | **Tool Execution** | Graceful fallbacks when operations fail | Booking fails → take message |
 
-### Architecture
+### Pipeline overview
 
 ```mermaid
 flowchart LR
@@ -489,25 +492,24 @@ flowchart LR
   IC --> SA["Sentiment Analysis"]
   SA --> EE["Entity Extraction"]
   EE --> SM["State Machine<br/>(LangGraph)"]
-  
+
   SM --> N1["Search KB"]
   SM --> N2["Check Availability"]
   SM --> N3["Execute Tool"]
   SM --> N4["Escalate"]
-  
+
   N1 --> GR["Generate Response"]
   N2 --> GR
   N3 --> GR
   N4 --> GR
-  
+
   GR --> Output["Response + Metadata"]
 ```
 
-### Documentation
+### LangGraph documentation
 
-For detailed information on LangGraph implementation, see:
 - [`docs/guides/README_LANGGRAPH.md`](docs/guides/README_LANGGRAPH.md) - Complete guide
-- [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) - Features & benefits
+- [`aivora-rag-service/LANGGRAPH_SUMMARY.md`](aivora-rag-service/LANGGRAPH_SUMMARY.md) - Features and benefits
 - [`docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md`](docs/guides/LANGGRAPH_IMPLEMENTATION_COMPLETE.md) - Technical details
 
 ---
@@ -530,5 +532,4 @@ For detailed information on LangGraph implementation, see:
 
 ---
 
-> **Status:** this repository is still evolving. The architecture is intentionally layered so the product can scale from a local launch to a production SaaS platform without a complete rewrite of the AI orchestration layer.#   A i v o r a  
- 
+> **Status:** this repository is still evolving. The architecture is intentionally layered so the product can scale from a local launch to a production SaaS platform without a complete rewrite of the AI orchestration layer.
